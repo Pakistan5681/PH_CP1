@@ -115,4 +115,39 @@ while inshop:
     print("Type 'hu' to upgrade health")
     print("Type 'hp' to buy health potions")    
     print("Type 'bp' to buy buff potions")
+    purchase = input("Type here: ")
+
+    while purchase != "bp" and purchase != "hp" and purchase != "hu" and purchase != "du":
+        print("That input is invalid.")
+        print("...")
+        purchase = input("Type here: ")
+    
+    print("-------------------------------------------------------------------------")
+
+    if purchase == "du":
+        if(playerGold >= damageIncreaseCost):
+            print("This costs " + str(damageIncreaseCost) + " gold. Would you like to purchase it?")
+            purchase = input("Type 'y' for yes and 'n' for no: ")
+
+            if(purchase == "y"):
+                playerGold -= damageIncreaseCost
+                damageIncreaseCost *= 1.5
+                playerStrength += 1
+
+            print("Would you like to go back to the shop?")
+            purchase = input("Type 'y' for yes and 'n' for no: ")
+
+            if purchase == "n":
+                inshop = False
+                break
+            
+        else:
+            print("This costs " + str(damageIncreaseCost) + " gold. You only have "+ str(playerGold))
+            print("Would you like to go back to the shop?")
+            purchase = input("Type 'y' for yes and 'n' for no: ")
+
+            if purchase == "n":
+                inshop = False
+                break
+            
 
