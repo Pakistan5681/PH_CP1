@@ -2,6 +2,7 @@ import random as r
 
 enemyHealth = 3
 playerHealth = 10
+maxPlayerHealth = 10
 
 dodgeInput = ""
 
@@ -18,7 +19,7 @@ playerGold = 0
 inshop = False
 
 damageIncreaseCost = 20
-
+healthIncreaseCost = 5
 
 while playerHealth > 0 and enemyHealth > 0:
     print("The turn begins!")
@@ -115,6 +116,7 @@ while inshop:
     print("Type 'hu' to upgrade health")
     print("Type 'hp' to buy health potions")    
     print("Type 'bp' to buy buff potions")
+    print("Type 'rh' to recover all health")
     purchase = input("Type here: ")
 
     while purchase != "bp" and purchase != "hp" and purchase != "hu" and purchase != "du":
@@ -129,6 +131,11 @@ while inshop:
             print("This costs " + str(damageIncreaseCost) + " gold. Would you like to purchase it?")
             purchase = input("Type 'y' for yes and 'n' for no: ")
 
+            while purchase != "y" and purchase != "n":
+                print("That input was invalid")
+                print("...")
+                purchase = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ")
+
             if(purchase == "y"):
                 playerGold -= damageIncreaseCost
                 damageIncreaseCost *= 1.5
@@ -137,10 +144,15 @@ while inshop:
             print("Would you like to go back to the shop?")
             purchase = input("Type 'y' for yes and 'n' for no: ")
 
+            while purchase != "y" and purchase != "n":
+                print("That input was invalid")
+                print("...")
+                purchase = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ")
+
             if purchase == "n":
                 inshop = False
                 break
-            
+
         else:
             print("This costs " + str(damageIncreaseCost) + " gold. You only have "+ str(playerGold))
             print("Would you like to go back to the shop?")
@@ -149,5 +161,43 @@ while inshop:
             if purchase == "n":
                 inshop = False
                 break
-            
+    elif purchase == "hu":
+        if(playerGold >= healthIncreaseCost):
+            print("This costs " + str(healthIncreaseCost) + " gold. Would you like to purchase it?")
+            purchase = input("Type 'y' for yes and 'n' for no: ")
+
+            while purchase != "y" and purchase != "n":
+                print("That input was invalid")
+                print("...")
+                purchase = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ")
+
+            if(purchase == "y"):
+                playerGold -= healthIncreaseCost
+                healthIncreaseCost *= 1.5
+                playerHealth += 1
+
+            print("Would you like to go back to the shop?")
+            purchase = input("Type 'y' for yes and 'n' for no: ")
+
+            while purchase != "y" and purchase != "n":
+                print("That input was invalid")
+                print("...")
+                purchase = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ")
+
+            if purchase == "n":
+                inshop = False
+                break
+
+        else:
+            print("This costs " + str(healthIncreaseCost) + " gold. You only have "+ str(playerGold))
+            print("Would you like to go back to the shop?")
+            purchase = input("Type 'y' for yes and 'n' for no: ")
+
+            if purchase == "n":
+                inshop = False
+                break      
+    elif purchase == "rh":
+        print("Your current health is " + str(playerHealth) + ", so a full recovery will cost " + str(maxPlayerHealth - playerHealth) + " gold.") 
+        
+        if 
 
