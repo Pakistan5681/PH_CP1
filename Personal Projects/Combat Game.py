@@ -145,7 +145,6 @@ while gameRunning:
                     playerGold -= damageIncreaseCost
                     damageIncreaseCost *= 1.5
                     playerStrength += 1
-                    pe
 
                 print("Would you like to go back to the shop?")
                 purchase = input("Type 'y' for yes and 'n' for no: ")
@@ -226,3 +225,4 @@ while gameRunning:
 
             if recoverInput == "f":
                 print("You will recover " + str(healthToRecover) + " health. It costs " +  str(healthToRecover) + " gold.")
+
