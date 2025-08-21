@@ -1,30 +1,37 @@
-# PH 2nd 
+import pickle  
+import random as r  
 
-import random as r
+enemyHealth = 3  
+playerHealth = 10  
+maxPlayerHealth = 10  
 
-enemyHealth = 3
-playerHealth = 10
-maxPlayerHealth = 10
+dodgeInput = ""  
 
-dodgeInput = ""
+enemyNames = ["RatBat", "Wanderer", "Imp", "Sludge", "Dark Blademaster", "Lost Ophan"]
 
-playerAttack = 0
-enemyAttack = 0
+playerAttack = 0  
+enemyAttack = 0  
 
-playerStrength = 3
-enemyStrength = 1
+playerStrength = 3  
+enemyStrength = 1  
 
-enemyGoldDrop = r.randint(5, 20)
+enemyGoldDrop = r.randint(5, 20)  
 
-playerGold = 0
+playerGold = 0  
 
-inshop = False
-gameRunning = True
+inshop = False  
+gameRunning = True  
 
-damageIncreaseCost = 20
-healthIncreaseCost = 5
+damageIncreaseCost = 20  
+healthIncreaseCost = 5  
 
 while gameRunning:
+    currentName = enemyNames[r.randint(0, len(enemyNames))]
+    print("You are now fighting a(n) " + currentName)
+    print("It has a strength of " + enemyStrength)
+    print("It has " + enemyHealth + " HP")
+    print(" ")
+
     while playerHealth > 0 and enemyHealth > 0:
         print("The turn begins!")
         print("---------------------------------------------------------------")
@@ -47,7 +54,7 @@ while gameRunning:
 
         if(playerAttack == enemyAttack):
             enemyHealth -= playerStrength
-            print("You hit the enemy! It took " + str(playerStrength) + " damage and is now at " + str(enemyHealth) + " HP.")
+            print("You hit the " + currentName + "! It took " + str(playerStrength) + " damage and is now at " + str(enemyHealth) + " HP.")
             print("---------------------------------------------------------------")
 
             if enemyHealth <= 0:
@@ -56,12 +63,12 @@ while gameRunning:
             print("You missed!")
             print("---------------------------------------------------------------")
 
-        dodgeInput = input("The enemy is attacking! Do you dodge (d) or block (b)? Type here: ")
+        dodgeInput = input("The " + currentName + " is attacking! Do you dodge (d) or block (b)? Type here: ")
 
         while dodgeInput != "d" and dodgeInput != "b":
             print("That input is invalid")
             print("...")
-            dodgeInput = input("The enemy is attacking! Do you dodge (d) or block (b)? Type here: ")
+            dodgeInput = input("The " + currentName + " is attacking! Do you dodge (d) or block (b)? Type here: ")
 
         if dodgeInput == "d":
             playerAttack = 1
@@ -78,7 +85,7 @@ while gameRunning:
             print("-----------------------------------------------------------------------------------------------------")
         else:
             playerHealth -= enemyStrength
-            print("The enemy hit you! You took " + str(enemyStrength) + " damage and you are now at " +str(playerHealth) + " HP")
+            print("The " + currentName + " enemy hit you! You took " + str(enemyStrength) + " damage and you are now at " +str(playerHealth) + " HP")
             print("-----------------------------------------------------------------------------------------------------")
 
         print("The turn is over. Type 'c' to continue to the next turn.")
@@ -124,7 +131,7 @@ while gameRunning:
         print("Type 'rh' to recover all health")
         purchase = input("Type here: ")
 
-        while purchase != "bp" and purchase != "hp" and purchase != "hu" and purchase != "du":
+        while purchase != "bp" and purchase != "hp" and purchase != "hu" and purchase != "du" and purchase != "rh":
             print("That input is invalid.")
             print("...")
             purchase = input("Type here: ")
@@ -208,21 +215,24 @@ while gameRunning:
             healthToRecover = 0
             recoverInput = ""
 
-            if playerGold >= price:
-                print("You have enough for a full recovery. Type 'f' to purchase a full recovery, or type 'c' to recover a custom amount")
-                recoverInput = input("Type here: ")
-                maxRecover = price
+            if playerHealth != maxPlayerHealth:
+                if playerGold >= price:
+                    print("You have enough for a full recovery. Type 'f' to purchase a full recovery, or type 'c' to recover a custom amount")
+                    recoverInput = input("Type here: ")
+                    maxRecover = price
+                else:
+                    print("You cannot make a full recovery. Since you have " + str(playerGold) + " gold, you can only recover " + str(playerGold) + " health")
+                    print("Type 'f' to purchase max recovery, or type 'c' to recover a custom amount")
+                    recoverInput = input("Type here: ")
+                    maxRecover = playerGold
+
+                while recoverInput != "f" and recoverInput != "c":
+                    print("That input is invalid")
+                    print("...")
+                    recoverInput = input("Type 'c' for custom or 'f' for full: ")
+
+                if recoverInput == "f":
+                    print("You will recover " + str(healthToRecover) + " health. It costs " +  str(healthToRecover) + " gold.")
             else:
-                print("You cannot make a full recovery. Since you have " + str(playerGold) + " gold, you can only recover " + str(playerGold) + " health")
-                print("Type 'f' to purchase max recovery, or type 'c' to recover a custom amount")
-                recoverInput = input("Type here: ")
-                maxRecover = playerGold
-
-            while recoverInput != "f" and recoverInput != "c":
-                print("That input is invalid")
-                print("...")
-                recoverInput = input("Type 'c' for custom or 'f' for full: ")
-
-            if recoverInput == "f":
-                print("You will recover " + str(healthToRecover) + " health. It costs " +  str(healthToRecover) + " gold.")
+                print("Your health is already at max. You do not need to recover")
 

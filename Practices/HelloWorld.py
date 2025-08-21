@@ -1,8 +1,11 @@
+import pickle
+
+names = []
+ids = {}
+
 while True:
-    name = input("Whats your name?") 
-    names = []
-    ids = {}
-    
+    name = input("Whats your name? ") 
+
     if name == "Ms. LaRose":
         if name in names:
             print("Salutations teacher. Welcome back my program. Stay as long as you would like.")
@@ -31,5 +34,11 @@ while True:
             names.append(name)
     
             print("Welcome to the program " + name)
+
+def saveCode():
+
+            
+# Hi teacher
+# This good code, no?
     
     
