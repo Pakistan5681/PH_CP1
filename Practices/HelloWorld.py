@@ -23,7 +23,7 @@ while True:
             print("Hello " + name +  ". Seeing that it is your first time here, we ask that you input a four digit id to secure your account")
             id = input("Input ID here: ") 
     
-            while int(id) < 1000 and int(id) > 9999:
+            while int(id) < 1000 or int(id) > 9999:
                 print("This id is invalid")
                 id = input("Input a VALID id here: ")
             
