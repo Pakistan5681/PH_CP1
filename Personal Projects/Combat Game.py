@@ -23,13 +23,37 @@ inshop = False
 gameRunning = True  
 
 damageIncreaseCost = 20  
-healthIncreaseCost = 5  
+healthIncreaseCost = 5
+
+currentName = ""
+
+def saveGame():
+    with open('saveData', 'wb') as file:
+        pickle.dump(playerHealth, file)
+        pickle.dump(maxPlayerHealth, file)
+        pickle.dump(playerStrength, file)
+        pickle.dump(currentName, file)
+        pickle.dump(damageIncreaseCost, file)
+        pickle.dump(healthIncreaseCost, file)
+        file.close()
+
+def loadGame():
+    with open('saveData', 'wb') as file:
+        loadedData = pickle.load(file)
+        print(loadedData)
+        file.close()
+
+saveGame()
+loadGame()
+
+
 
 while gameRunning:
+    saveGame()
     currentName = enemyNames[r.randint(0, len(enemyNames))]
     print("You are now fighting a(n) " + currentName)
-    print("It has a strength of " + enemyStrength)
-    print("It has " + enemyHealth + " HP")
+    print("It has a strength of " + str(enemyStrength))
+    print("It has " + str(enemyHealth + " HP"))
     print(" ")
 
     while playerHealth > 0 and enemyHealth > 0:
