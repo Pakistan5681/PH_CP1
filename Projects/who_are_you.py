@@ -1,26 +1,40 @@
-names = []
-ages = {}
-favorite_colors = {}
-
-while True:
-    name = input("Whats your name? ")
-
-    if name in names:
-        print("Welcome back " + name + "!")
-        
-    else:
-        print("Hello " + name + "! Seeing as it is your first time here, please enter the following for security")
-        age = input("Whats your age: ")
-
-        while int(age) < 4 and int(age) > 130:
-            print("Your age is inavlid")
-            age = input("Please input an age between 4 and 130: ")
-        favorite_color = input("whats your favorite color: ")
-        favorite_color = str.lower(favorite_color)
-
-        names.append(name)
-        ages[name] = int(age)
-        favorite_colors[name] = favorite_color
-
-        print("Hello " + name + ". You are now a part of the system")
-
+names = [] # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ages = {} # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+favorite_colors = {} # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+while True: # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+    name = input("Whats your name? ") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+    if name in names: # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        print("Welcome back " + name + "!") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        print("We have some security questions to ask") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        age = int(input("Whats your age? ")) # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        if(ages[name] == age): # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            print("Login succesful") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            print("Your age is " + str(age) + " and your favorite color is " + favorite_colors[name]) # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        else:# hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            print("Your account has been deleted for security reasons") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            names.remove(name) # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            ages[name] = 0 # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            favorite_color[name] = "" # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+    else: # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        print("Hello " + name + "! Seeing as it is your first time here, please enter the following for security") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        age = input("Whats your age: ") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        while int(age) < 4 and int(age) > 130: # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            print("Your age is inavlid") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+            age = input("Please input an age between 4 and 130: ") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+         # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        print(" ") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        favorite_color = input("whats your favorite color: ") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        favorite_color = str.lower(favorite_color) # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        names.append(name) # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        ages[name] = int(age) # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        favorite_colors[name] = favorite_color # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+        print("Hello " + name + ". You are now a part of the system") # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
+ # hello teacher. As you can see, I have gained computational omnipresence. This script is childs play for one such as me. I have used classes, linearly interpolated (lerped) quaternions. I am the master programmer. Fear my mighty [ower]
