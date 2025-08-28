@@ -94,12 +94,51 @@ def generateRoom(roomPos):
                 doorsList.append("east")   
             elif i == 3:
                 doorsList.append("north") 
-        
-        doors = cellDoors[[roomPos[0] - 1, roomPos[1]]]
-        tempList = []
 
-        for i in doors:
-            tempList.append[i]
+        if tuple([roomPos[0] - 1, roomPos[1]]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0] - 1, roomPos[1]])]
+            tempList = []
+
+            for i in doors:
+                tempList.append[i]
+
+            if "east" in tempList:
+                doorsList.append("west")
+
+        if tuple([roomPos[0] + 1, roomPos[1]]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0] + 1, roomPos[1]])]
+            tempList = []
+    
+            for i in doors:
+                tempList.append[i]
+    
+            if "east" in tempList:
+                doorsList.append("west")
+
+        if tuple([roomPos[0], roomPos[1] + 1]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0] + 1, roomPos[1]])]
+            tempList = []
+    
+            for i in doors:
+                tempList.append[i]
+    
+            if "south" in tempList:
+                doorsList.append("north")
+
+        if tuple([roomPos[0], roomPos[1] - 1]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0], roomPos[1] - 1])]
+            tempList = []
+    
+            for i in doors:
+                tempList.append[i]
+    
+            if "north" in tempList:
+                doorsList.append("south")
+
+    cellDoors[tuple(roomPos)] = doorsList
+
+
+        
 
     
 def generateWorld(layers):
@@ -345,7 +384,7 @@ def explore():
     print("What direction do you want to go")
 
     currentCellDoors = []
-    doorPlaceholder = cellDoors(playerpos)
+    doorPlaceholder = cellDoors[tuple(playerpos)]
 
     for i in cellDoors(playerpos):
         currentCellDoors.append(i)
@@ -361,7 +400,7 @@ def explore():
     if("west" in currentCellDoors):
         print("Type 'w' to go west")
 
-
+generateWorld(5)
 
 while gameRunning:
     loadGame()
