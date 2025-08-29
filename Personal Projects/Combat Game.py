@@ -1,5 +1,5 @@
 import pickle  
-import random as r  
+import random as r 
 
 enemyHealth = 0
 playerHealth = 10  
@@ -42,9 +42,19 @@ def saveGame():
 def loadGame():
     with open('saveData', 'rb') as file:
         loadedData = pickle.load(file)
-        playerHealth = loadedData[0]
-        maxPlayerHealth
-        file.close()
+        return loadedData
+    
+    file.close()
+
+saveList = loadGame()
+
+playerHealth = saveList[0]
+maxPlayerHealth = saveList[1]
+playerStrength = saveList[2]
+currentName = saveList[3]
+damageIncreaseCost = saveList[4]
+healthIncreaseCost = saveList[5]  
+playerpos = [saveList[6], saveList[7]]
 
 saveGame()
 loadGame()
@@ -84,12 +94,51 @@ def generateRoom(roomPos):
                 doorsList.append("east")   
             elif i == 3:
                 doorsList.append("north") 
-        
-        doors = cellDoors[[roomPos[0] - 1, roomPos[1]]]
-        tempList = []
 
-        for i in doors:
-            tempList.append[i]
+        if tuple([roomPos[0] - 1, roomPos[1]]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0] - 1, roomPos[1]])]
+            tempList = []
+
+            for i in doors:
+                tempList.append[i]
+
+            if "east" in tempList:
+                doorsList.append("west")
+
+        if tuple([roomPos[0] + 1, roomPos[1]]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0] + 1, roomPos[1]])]
+            tempList = []
+    
+            for i in doors:
+                tempList.append[i]
+    
+            if "east" in tempList:
+                doorsList.append("west")
+
+        if tuple([roomPos[0], roomPos[1] + 1]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0] + 1, roomPos[1]])]
+            tempList = []
+    
+            for i in doors:
+                tempList.append[i]
+    
+            if "south" in tempList:
+                doorsList.append("north")
+
+        if tuple([roomPos[0], roomPos[1] - 1]) in cellDoors:
+            doors = cellDoors[tuple([roomPos[0], roomPos[1] - 1])]
+            tempList = []
+    
+            for i in doors:
+                tempList.append[i]
+    
+            if "north" in tempList:
+                doorsList.append("south")
+
+    cellDoors[tuple(roomPos)] = doorsList
+
+
+        
 
     
 def generateWorld(layers):
@@ -332,9 +381,29 @@ def shopCell():
 
 def explore():
     print("You are currently on (" + str(playerpos[0]) + ", " + str(playerpos[1]) + ")")
-    input(" ")
+    print("What direction do you want to go")
+
+    currentCellDoors = []
+    doorPlaceholder = cellDoors[tuple(playerpos)]
+
+    for i in cellDoors(playerpos):
+        currentCellDoors.append(i)
+    
+    print(currentCellDoors)
+
+    if("north" in currentCellDoors):
+        print("Type 'n' to go north")
+    if("south" in currentCellDoors):
+        print("Type 's' to go south")
+    if("east" in currentCellDoors):
+        print("Type 'e' to go east")
+    if("west" in currentCellDoors):
+        print("Type 'w' to go west")
+
+generateWorld(5)
 
 while gameRunning:
+    loadGame()
     explore()
-
+    print(playerHealth)
 
