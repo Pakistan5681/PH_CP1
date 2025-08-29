@@ -1,9 +1,13 @@
 import pickle  
 import random as r  
 
-enemyHealth = 3  
+enemyHealth = 0
 playerHealth = 10  
 maxPlayerHealth = 10  
+
+playerpos = [0, 0]
+
+cellDoors = {} # example ([6, 2], [north, west, east])
 
 dodgeInput = ""  
 
@@ -25,35 +29,80 @@ gameRunning = True
 damageIncreaseCost = 20  
 healthIncreaseCost = 5
 
+inputBool = False
+
 currentName = ""
 
 def saveGame():
     with open('saveData', 'wb') as file:
-        pickle.dump(playerHealth, file)
-        pickle.dump(maxPlayerHealth, file)
-        pickle.dump(playerStrength, file)
-        pickle.dump(currentName, file)
-        pickle.dump(damageIncreaseCost, file)
-        pickle.dump(healthIncreaseCost, file)
+        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerpos[0], playerpos[1]]
+        pickle.dump(saveList, file)
         file.close()
 
 def loadGame():
-    with open('saveData', 'wb') as file:
+    with open('saveData', 'rb') as file:
         loadedData = pickle.load(file)
-        print(loadedData)
+        playerHealth = loadedData[0]
+        maxPlayerHealth
         file.close()
 
 saveGame()
 loadGame()
 
+def confirm(message):
+    print(message)
+    print("Type 'y' to confirm or 'n' to cancel")
+    confirm = input("Type here: ")
 
+    while confirm != "y" and confirm != "n":
+        confirm = input("Please type 'y' or 'n'")
 
-while gameRunning:
+    if(confirm == "y"):
+        return True
+    elif confirm == "n":
+        return False
+    
+def randomBool():
+    number = r.randint(0, 1)
+
+    if(number == 0):
+        return True
+    else:
+        return False
+    
+def generateRoom(roomPos):
+    for i in range(4):
+        doorBool = randomBool()
+        doorsList = []
+
+        if doorBool == True:
+            if i == 0:
+                doorsList.append("north")
+            elif i == 1:
+                doorsList.append("south")
+            elif i == 2:
+                doorsList.append("east")   
+            elif i == 3:
+                doorsList.append("north") 
+        
+        doors = cellDoors[[roomPos[0] - 1, roomPos[1]]]
+        tempList = []
+
+        for i in doors:
+            tempList.append[i]
+
+    
+def generateWorld(layers):
+    for x in range(layers):
+        for y in range(layers):
+            generateRoom([x,y])
+
+def doCombat():
     saveGame()
-    currentName = enemyNames[r.randint(0, len(enemyNames))]
+    currentName = enemyNames[r.randint(0, len(enemyNames) - 1)]
     print("You are now fighting a(n) " + currentName)
     print("It has a strength of " + str(enemyStrength))
-    print("It has " + str(enemyHealth + " HP"))
+    print("It has " + str(enemyHealth) + " HP")
     print(" ")
 
     while playerHealth > 0 and enemyHealth > 0:
@@ -109,7 +158,7 @@ while gameRunning:
             print("-----------------------------------------------------------------------------------------------------")
         else:
             playerHealth -= enemyStrength
-            print("The " + currentName + " enemy hit you! You took " + str(enemyStrength) + " damage and you are now at " +str(playerHealth) + " HP")
+            print("The " + currentName + " hit you! You took " + str(enemyStrength) + " damage and you are now at " +str(playerHealth) + " HP")
             print("-----------------------------------------------------------------------------------------------------")
 
         print("The turn is over. Type 'c' to continue to the next turn.")
@@ -133,6 +182,8 @@ while gameRunning:
     playerGold += enemyGoldDrop
 
     print("The enemy has been killed!")
+
+def shopCell():
     goToShop = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ")
 
     while goToShop != "y" and goToShop != "n":
@@ -153,9 +204,10 @@ while gameRunning:
         print("Type 'hp' to buy health potions")    
         print("Type 'bp' to buy buff potions")
         print("Type 'rh' to recover all health")
+        print("Type 'ls' to leave shop.")
         purchase = input("Type here: ")
 
-        while purchase != "bp" and purchase != "hp" and purchase != "hu" and purchase != "du" and purchase != "rh":
+        while purchase != "bp" and purchase != "hp" and purchase != "hu" and purchase != "du" and purchase != "rh" and purchase != "ls":
             print("That input is invalid.")
             print("...")
             purchase = input("Type here: ")
@@ -233,13 +285,13 @@ while gameRunning:
                     inshop = False
                     break      
         elif purchase == "rh":
-            print("Your current health is " + str(playerHealth) + ", so a full recovery will cost " + str(maxPlayerHealth - playerHealth) + " gold.") 
-            price = maxPlayerHealth - playerHealth
-            maxRecover = 0
-            healthToRecover = 0
-            recoverInput = ""
-
             if playerHealth != maxPlayerHealth:
+                print("Your current health is " + str(playerHealth) + ", so a full recovery will cost " + str(maxPlayerHealth - playerHealth) + " gold.") 
+                price = maxPlayerHealth - playerHealth
+                maxRecover = 0
+                healthToRecover = 0
+                recoverInput = ""
+
                 if playerGold >= price:
                     print("You have enough for a full recovery. Type 'f' to purchase a full recovery, or type 'c' to recover a custom amount")
                     recoverInput = input("Type here: ")
@@ -256,7 +308,33 @@ while gameRunning:
                     recoverInput = input("Type 'c' for custom or 'f' for full: ")
 
                 if recoverInput == "f":
+                    healthToRecover = maxRecover
                     print("You will recover " + str(healthToRecover) + " health. It costs " +  str(healthToRecover) + " gold.")
+                    confirm("Do you want to recover this much health")
+
+                    if inputBool:
+                        playerHealth += healthToRecover
+                        playerGold -= healthToRecover
+                else:
+                    htr = int(input("how much health do you want to recover. The max is " + maxRecover))
+                    
             else:
                 print("Your health is already at max. You do not need to recover")
+        elif purchase == "ls":
+            
+
+            if confirm("Are you sure you want to leave the shop?"):
+                inshop = False
+                print("------------------------------------------------")
+                break
+            else:
+                print("staying in shop")
+
+def explore():
+    print("You are currently on (" + str(playerpos[0]) + ", " + str(playerpos[1]) + ")")
+    input(" ")
+
+while gameRunning:
+    explore()
+
 
