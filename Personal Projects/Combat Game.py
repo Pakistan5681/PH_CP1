@@ -402,6 +402,9 @@ def explore():
 
 generateWorld(5)
 
+
+
+
 while gameRunning:
     loadGame()
     explore()
