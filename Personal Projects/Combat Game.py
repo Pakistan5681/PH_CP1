@@ -46,6 +46,8 @@ def loadGame():
     
     file.close()
 
+saveGame()
+
 saveList = loadGame()
 
 playerHealth = saveList[0]
@@ -100,7 +102,7 @@ def generateRoom(roomPos):
             tempList = []
 
             for i in doors:
-                tempList.append[i]
+                tempList.append(i)
 
             if "east" in tempList:
                 doorsList.append("west")
@@ -130,7 +132,7 @@ def generateRoom(roomPos):
             tempList = []
     
             for i in doors:
-                tempList.append[i]
+                tempList.append(i)
     
             if "north" in tempList:
                 doorsList.append("south")
@@ -386,10 +388,8 @@ def explore():
     currentCellDoors = []
     doorPlaceholder = cellDoors[tuple(playerpos)]
 
-    for i in cellDoors(playerpos):
+    for i in doorPlaceholder:
         currentCellDoors.append(i)
-    
-    print(currentCellDoors)
 
     if("north" in currentCellDoors):
         print("Type 'n' to go north")
@@ -399,10 +399,9 @@ def explore():
         print("Type 'e' to go east")
     if("west" in currentCellDoors):
         print("Type 'w' to go west")
+    
 
 generateWorld(5)
-
-
 
 
 while gameRunning:
