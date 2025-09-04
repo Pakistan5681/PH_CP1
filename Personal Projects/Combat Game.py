@@ -83,18 +83,20 @@ def randomBool():
         return False
     
 def generateRoom(roomPos):
+    roomType = 0
+
     for i in range(4):
         doorBool = randomBool()
         doorsList = []
 
         if doorBool == True:
-            if i == 0:
+            if roomType == 0:
                 doorsList.append("north")
-            elif i == 1:
+            elif roomType == 1:
                 doorsList.append("south")
-            elif i == 2:
+            elif roomType == 2:
                 doorsList.append("east")   
-            elif i == 3:
+            elif roomType == 3:
                 doorsList.append("north") 
 
         if tuple([roomPos[0] - 1, roomPos[1]]) in cellDoors:
@@ -136,6 +138,8 @@ def generateRoom(roomPos):
     
             if "north" in tempList:
                 doorsList.append("south")
+        
+        roomType += 1
 
     cellDoors[tuple(roomPos)] = doorsList
 
@@ -387,19 +391,41 @@ def explore():
 
     currentCellDoors = []
     doorPlaceholder = cellDoors[tuple(playerpos)]
+    validDirections = []
 
     for i in doorPlaceholder:
         currentCellDoors.append(i)
 
+    print(currentCellDoors)
+
     if("north" in currentCellDoors):
         print("Type 'n' to go north")
+        validDirections.append('n')
     if("south" in currentCellDoors):
         print("Type 's' to go south")
+        validDirections.append('s')
     if("east" in currentCellDoors):
         print("Type 'e' to go east")
+        validDirections.append('e')
     if("west" in currentCellDoors):
         print("Type 'w' to go west")
-    
+        validDirections.append('w')
+
+    direction = input("Pick a direction: ")
+
+    while not direction in validDirections:
+        print("That direction is invalid")
+        print(" ")
+        direction = input("Pick a direction: ")
+        
+    if direction == "n":
+        playerPos = [playerPos[0], playerPos[1] + 1]
+    elif direction == "s":
+        playerPos = [playerPos[0], playerPos[1] - 1]
+    elif direction == "e":
+        playerPos = [playerPos[0] + 1, playerPos[1]]
+    elif direction == "w":
+        playerPos = [playerPos[0] - 1, playerPos[1]]
 
 generateWorld(5)
 
