@@ -417,15 +417,19 @@ def explore():
         print("That direction is invalid")
         print(" ")
         direction = input("Pick a direction: ")
+
+    x = playerPos[0]
+    y = playerPos[1]
         
     if direction == "n":
-        playerPos = [playerPos[0], playerPos[1] + 1]
+        
+        playerPos = [x, y + 1]
     elif direction == "s":
-        playerPos = [playerPos[0], playerPos[1] - 1]
+        playerPos = [x, y - 1]
     elif direction == "e":
-        playerPos = [playerPos[0] + 1, playerPos[1]]
+        playerPos = [x + 1, y]
     elif direction == "w":
-        playerPos = [playerPos[0] - 1, playerPos[1]]
+        playerPos = [x - 1, y]
 
 generateWorld(5)
 
