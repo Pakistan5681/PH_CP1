@@ -3,7 +3,7 @@
 
 print("test")
 
-crab = input("Hi there: ")
+crab = input("Hi there human: ") 
 crab = str.lower(crab)
 
 print("What makes you think that " + crab + " was a proper answer")
