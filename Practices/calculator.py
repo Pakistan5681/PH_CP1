@@ -25,11 +25,17 @@ while active:
             print("You do not have enough inputs for an equation")
             number = input(f"What would you like for number {len(inputs) + 1}? ")
 
-        while not number.isnumeric() and not number.isdecimal():
+        
+
+        while not number.isnumeric() and not number.isdecimal() and number != 'e':
             print(" ")
             print("That is not a number")
             number = input(f"What would you like for number {len(inputs) + 1}? ")
 
-        inputs.append(number)
+        if number != 'e':
+            inputs.append(float(number))
+
+    print("Task Complete")
+    break
 
 
