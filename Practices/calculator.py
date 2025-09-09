@@ -40,37 +40,37 @@ while active:
             output += i
     elif equation =='-':
         output = inputs[0]
-        inputs.remove[0]
+        inputs.remove(output)
         
         for i in inputs:
             output -= i
     elif equation =='*':
         output = inputs[0]
-        inputs.remove[0]
+        inputs.remove(output)
         
         for i in inputs:
             output *= i
     elif equation =='/':
         output = inputs[0]
-        inputs.remove(0)
+        inputs.remove(output)
         
         for i in inputs:
             output /= i    
     elif equation =='//':
         output = inputs[0]
-        inputs.remove(0)
+        inputs.remove(output)
         
         for i in inputs:
             output //= i 
     elif equation =='**':
         output = inputs[0]
-        inputs.remove[0]
+        inputs.remove(output)
         
         for i in inputs:
             output **= i   
     elif equation =='%':
         output = inputs[0]
-        inputs.remove[0]
+        inputs.remove(output)
         
         for i in inputs:
             output **= i  
