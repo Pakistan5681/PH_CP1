@@ -9,4 +9,4 @@ crab = str.lower(crab)
 print("What makes you think that " + crab + " was a proper answer")
 print("Ima send you to the gulags")
 print(" ")
-# all is well
+print("How are the Gulags?")
