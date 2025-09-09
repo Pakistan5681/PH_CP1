@@ -23,19 +23,69 @@ while active:
         while number == 'e' and len(inputs) < 2:
             print(" ")
             print("You do not have enough inputs for an equation")
-            number = input(f"What would you like for number {len(inputs) + 1}? ")
+            number = input(f"What would you like for number {len(inputs) + 1}? ")       
 
-        
-
-        while not number.isnumeric() and not number.isdecimal() and number != 'e':
+        while not number.isdigit() and not number.isdecimal() and number != 'e' and not "-" in number and not "." in number:
             print(" ")
             print("That is not a number")
             number = input(f"What would you like for number {len(inputs) + 1}? ")
 
         if number != 'e':
             inputs.append(float(number))
+    
+    output = 0
 
-    print("Task Complete")
-    break
+    if equation =='+':
+        for i in inputs:
+            output += i
+    elif equation =='-':
+        output = inputs[0]
+        inputs.remove[0]
+        
+        for i in inputs:
+            output -= i
+    elif equation =='*':
+        output = inputs[0]
+        inputs.remove[0]
+        
+        for i in inputs:
+            output *= i
+    elif equation =='/':
+        output = inputs[0]
+        inputs.remove(0)
+        
+        for i in inputs:
+            output /= i    
+    elif equation =='//':
+        output = inputs[0]
+        inputs.remove(0)
+        
+        for i in inputs:
+            output //= i 
+    elif equation =='**':
+        output = inputs[0]
+        inputs.remove[0]
+        
+        for i in inputs:
+            output **= i   
+    elif equation =='%':
+        output = inputs[0]
+        inputs.remove[0]
+        
+        for i in inputs:
+            output **= i  
+
+    print(f"Ouput: {output:.2f}") 
+    print(" ")
+    print("Would you like to continue running 'calculator.exe'? Type 'y' for yes and 'n' for no")
+    confirm = input("Type 'y' or 'n' here: ").strip().lower().replace(" ", "")
+
+    while confirm != 'y' and confirm != 'n':
+        print(" ")
+        print("That input is invalid")
+        confirm = input("Type 'y' or 'n' here: ").strip().lower()
+
+    if confirm == 'n':
+        active = False
 
 
