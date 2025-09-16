@@ -8,6 +8,7 @@ maxPlayerHealth = 10
 playerpos = [0, 0]
 
 cellDoors = {} # example ([6, 2], [north, west, east])
+cellTypes = {} # example ([3, 7], 'shop')
 
 dodgeInput = ""  
 
@@ -26,6 +27,8 @@ playerGold = 0
 inshop = False  
 gameRunning = True  
 
+worldLayers = 10
+
 damageIncreaseCost = 20  
 healthIncreaseCost = 5
 
@@ -33,9 +36,9 @@ inputBool = False
 
 currentName = ""
 
-def saveGame():
+def saveGame(playerX, playerY):
     with open('saveData', 'wb') as file:
-        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerpos[0], playerpos[1]]
+        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY]
         pickle.dump(saveList, file)
         file.close()
 
@@ -46,7 +49,7 @@ def loadGame():
     
     file.close()
 
-saveGame()
+saveGame(playerpos[0], playerpos[1])
 
 saveList = loadGame()
 
@@ -58,9 +61,10 @@ damageIncreaseCost = saveList[4]
 healthIncreaseCost = saveList[5]  
 playerpos = [saveList[6], saveList[7]]
 
-saveGame()
+saveGame(playerpos[0], playerpos[1])
 loadGame()
 
+# A basic function to confirm an action. Mostly used in the shop.
 def confirm(message):
     print(message)
     print("Type 'y' to confirm or 'n' to cancel")
@@ -74,20 +78,34 @@ def confirm(message):
     elif confirm == "n":
         return False
     
-def randomBool():
-    number = r.randint(0, 1)
+def randomBool(trueChance): # trueChance is the percentage chance of the output being true
+    number = r.randint(0, 100)
 
-    if(number == 0):
+    if number < trueChance:
         return True
     else:
         return False
     
+def randomRoomType():
+    number = r.randint(0, 100)
+
+    if number <= 50:
+        return "empty"
+    elif number <= 75:
+        return "enemy"
+    elif number <= 100:
+        return "shop"
+    else:
+        print("ERROR")
+        return "empty"
+        
+
 def generateRoom(roomPos):
     roomType = 0
+    doorsList = []
 
     for i in range(4):
-        doorBool = randomBool()
-        doorsList = []
+        doorBool = randomBool(75)
 
         if doorBool == True:
             if roomType == 0:
@@ -97,8 +115,11 @@ def generateRoom(roomPos):
             elif roomType == 2:
                 doorsList.append("east")   
             elif roomType == 3:
-                doorsList.append("north") 
+                doorsList.append("west") 
+            else:
+                print("ERROR")
 
+        # 109 - 147: Adds doors for adjacent rooms (If the room to the north has a door leading south, add a door leading north etc.)
         if tuple([roomPos[0] - 1, roomPos[1]]) in cellDoors:
             doors = cellDoors[tuple([roomPos[0] - 1, roomPos[1]])]
             tempList = []
@@ -106,7 +127,7 @@ def generateRoom(roomPos):
             for i in doors:
                 tempList.append(i)
 
-            if "east" in tempList:
+            if "east" in tempList and not "west" in doorsList:
                 doorsList.append("west")
 
         if tuple([roomPos[0] + 1, roomPos[1]]) in cellDoors:
@@ -116,8 +137,8 @@ def generateRoom(roomPos):
             for i in doors:
                 tempList.append[i]
     
-            if "east" in tempList:
-                doorsList.append("west")
+            if "west" in tempList and not "east" in doorsList:
+                doorsList.append("east")
 
         if tuple([roomPos[0], roomPos[1] + 1]) in cellDoors:
             doors = cellDoors[tuple([roomPos[0] + 1, roomPos[1]])]
@@ -126,7 +147,7 @@ def generateRoom(roomPos):
             for i in doors:
                 tempList.append[i]
     
-            if "south" in tempList:
+            if "south" in tempList and not "north" in doorsList:
                 doorsList.append("north")
 
         if tuple([roomPos[0], roomPos[1] - 1]) in cellDoors:
@@ -136,16 +157,22 @@ def generateRoom(roomPos):
             for i in doors:
                 tempList.append(i)
     
-            if "north" in tempList:
+            if "north" in tempList and not "south" in doorsList:
                 doorsList.append("south")
-        
+
+        # remove doors on world borders
+        if roomPos[0] == 0 and "west" in doorsList:
+            doorsList.remove("west")
+        if roomPos[0] == worldLayers and "east" in doorsList:
+            doorsList.remove("east")
+        if roomPos[1] == 0 and "south" in doorsList:
+            doorsList.remove("south")
+        if roomPos[1] == worldLayers and "north" in doorsList:
+            doorsList.remove("north")
+
         roomType += 1
 
     cellDoors[tuple(roomPos)] = doorsList
-
-
-        
-
     
 def generateWorld(layers):
     for x in range(layers):
@@ -385,7 +412,7 @@ def shopCell():
             else:
                 print("staying in shop")
 
-def explore():
+def explore(x, y):
     print("You are currently on (" + str(playerpos[0]) + ", " + str(playerpos[1]) + ")")
     print("What direction do you want to go")
 
@@ -395,8 +422,6 @@ def explore():
 
     for i in doorPlaceholder:
         currentCellDoors.append(i)
-
-    print(currentCellDoors)
 
     if("north" in currentCellDoors):
         print("Type 'n' to go north")
@@ -417,25 +442,22 @@ def explore():
         print("That direction is invalid")
         print(" ")
         direction = input("Pick a direction: ")
-
-    x = playerPos[0]
-    y = playerPos[1]
         
-    if direction == "n":
-        
-        playerPos = [x, y + 1]
+    if direction == "n":        
+        y += 1
     elif direction == "s":
-        playerPos = [x, y - 1]
+        y -= 1
     elif direction == "e":
-        playerPos = [x + 1, y]
+        x += 1
     elif direction == "w":
-        playerPos = [x - 1, y]
+        x -= 1
 
-generateWorld(5)
+    return [x, y]
+
+generateWorld(worldLayers)
 
 
 while gameRunning:
     loadGame()
-    explore()
-    print(playerHealth)
+    playerpos = explore(playerpos[0], playerpos[1])
 
