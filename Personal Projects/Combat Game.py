@@ -200,19 +200,21 @@ def generateWorld(layers):
     saveGame(playerpos[0], playerpos[1]) 
  
      
-def combatStartData(playerHealth) :
+def combatStartData() :
     currentName = enemyNames[r.randint(0, len(enemyNames) - 1)] 
     enemyHealth = r.randint(5, 15)   
-    playerHealthOut = playerHealth
     enemyStrength = r.randint(1, 3)
 
-    return [currentName, enemyHealth, playerHealthOut, enemyStrength]           
+    return [currentName, enemyHealth, enemyStrength]           
  
 def doCombat(startData): 
     currentName = startData[0]
     enemyHealth = startData[1]
-    playerHealth = startData[2]
-    enemyStrength = startData[3]
+    enemyStrength = startData[2]
+    global playerHealth
+    global playerGold
+    global playerpos
+    global cellTypes
 
     print("You are now fighting a(n) " + currentName) 
     print("It has a strength of " + str(enemyStrength)) 
@@ -293,13 +295,18 @@ def doCombat(startData):
                 print("That input is invalid. Type 'c', 'h', or 's'.") 
  
             continueInput = input("Type here: ") 
- 
-    playerGold += enemyGoldDrop 
- 
+
+        if continueInput == "c":
+            continue
+
     print("The enemy has been killed!") 
     saveGame(playerpos[0], playerpos[1])
  
-def shopCell(playerGold): 
+    playerGold += enemyGoldDrop 
+    
+    cellTypes[playerpos] = "empty"
+ 
+def shopCell(): 
     goToShop = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ") 
  
     while goToShop != "y" and goToShop != "n": 
@@ -313,6 +320,13 @@ def shopCell(playerGold):
         inshop = False 
  
     while inshop: 
+        global playerGold
+        global damageIncreaseCost
+        global playerStrength
+        global healthIncreaseCost
+        global playerHealth
+        global maxPlayerHealth
+
         print("----------------------------------------------------------------------------------------") 
         print("Your current gold is " + str(playerGold)) 
         print("Type 'du' to upgrade damage") 
@@ -344,7 +358,7 @@ def shopCell(playerGold):
                     playerGold -= damageIncreaseCost 
                     damageIncreaseCost *= 1.5 
                     playerStrength += 1 
- 
+
                 print("Would you like to go back to the shop?") 
                 purchase = input("Type 'y' for yes and 'n' for no: ") 
  
@@ -356,6 +370,9 @@ def shopCell(playerGold):
                 if purchase == "n": 
                     inshop = False 
                     break 
+                else:
+                    continue
+
  
             else: 
                 print("This costs " + str(damageIncreaseCost) + " gold. You only have "+ str(playerGold)) 
@@ -365,6 +382,8 @@ def shopCell(playerGold):
                 if purchase == "n": 
                     inshop = False 
                     break 
+                else:
+                    continue
         elif purchase == "hu": 
             if(playerGold >= healthIncreaseCost): 
                 print("This costs " + str(healthIncreaseCost) + " gold. Would you like to purchase it?") 
@@ -391,6 +410,8 @@ def shopCell(playerGold):
                 if purchase == "n": 
                     inshop = False 
                     break 
+                else:
+                    continue
  
             else: 
                 print("This costs " + str(healthIncreaseCost) + " gold. You only have "+ str(playerGold)) 
@@ -399,7 +420,9 @@ def shopCell(playerGold):
  
                 if purchase == "n": 
                     inshop = False 
-                    break       
+                    break  
+                else:
+                    continue     
         elif purchase == "rh": 
             if playerHealth != maxPlayerHealth: 
                 print("Your current health is " + str(playerHealth) + ", so a full recovery will cost " + str(maxPlayerHealth - playerHealth) + " gold.")  
@@ -433,29 +456,31 @@ def shopCell(playerGold):
                         playerGold -= healthToRecover 
                 else: 
                     htr = int(input("how much health do you want to recover. The max is " + maxRecover)) 
+
+                continue
                      
             else: 
                 print("Your health is already at max. You do not need to recover") 
-        elif purchase == "ls": 
-             
- 
+        elif purchase == "ls":              
             if confirm("Are you sure you want to leave the shop?"): 
                 inshop = False 
                 print("------------------------------------------------") 
                 break 
             else: 
-                print("staying in shop") 
+                print("staying in shop")
+                continue 
  
-def explore(x, y, playerGold): 
+def explore(x, y): 
     print(" ") 
     print("You are currently on (" + str(playerpos[0]) + ", " + str(playerpos[1]) + ")") 
     print(f"It is a(n) {cellTypes[x,y]} room") 
     
 
+
     if cellTypes[x,y] == "enemy":
-        doCombat(combatStartData(playerHealth))
+        doCombat(combatStartData())
     elif cellTypes[x,y] == "shop":
-        shopCell(playerGold)
+        shopCell()
 
     print("What direction do you want to go") 
  
@@ -500,10 +525,10 @@ def explore(x, y, playerGold):
     return [x, y] 
  
      
-saveList = loadGame() 
-worldSave = loadSavedWorld() 
+saveList = loadGame()
+worldSave = loadSavedWorld()
  
-manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
  
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
@@ -524,6 +549,6 @@ print(f"Number of rooms: {len(cellDoors)}")
  
 while gameRunning: 
     loadGame() 
-    playerpos = explore(playerpos[0], playerpos[1], playerGold) 
+    playerpos = explore(playerpos[0], playerpos[1]) 
  
  
