@@ -9,6 +9,7 @@ playerpos = [0, 0]
  
 cellDoors = {} # example ([6, 2], [north, west, east]) 
 cellTypes = {} # example ([3, 7], 'shop') 
+cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
  
 dodgeInput = ""   
  
@@ -31,6 +32,9 @@ worldLayers = 20
  
 damageIncreaseCost = 20   
 healthIncreaseCost = 5 
+
+moveTimes = 0
+killCount = 0
  
 inputBool = False 
  
@@ -38,11 +42,11 @@ currentName = ""
  
 def saveGame(playerX, playerY): 
     with open('saveData', 'wb') as file: 
-        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY] 
+        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY, moveTimes, killCount] 
         pickle.dump(saveList, file) 
         file.close() 
     with open('worldSave', 'wb') as file: 
-        saveList = [cellDoors, cellTypes] 
+        saveList = [cellDoors, cellTypes, cellEnemies] 
         pickle.dump(saveList, file) 
         file.close() 
  
@@ -82,12 +86,13 @@ def randomBool(trueChance): # trueChance is the percentage chance of the output 
     else: 
         return False 
      
-def randomRoomType(): 
+def randomRoomType(roomX, roomY): 
     number = r.randint(0, 100) 
  
     if number <= 50: # 50% chance of room being empty 
         return "empty" 
     elif number <= 75: # 25% chance of room having an enemy 
+        cellEnemies[roomX, roomY] = randomEnemy()
         return "enemy" 
     elif number <= 100: # 25% chance of room being a shop 
         return "shop" 
@@ -166,7 +171,7 @@ def generateRoom(roomPos):
         if roomPos[1] == worldLayers and "north" in doorsList: 
             doorsList.remove("north") 
  
-        cellRoom = randomRoomType() 
+        cellRoom = randomRoomType(roomPos[0], roomPos[1]) 
  
         cellTypes[tuple(roomPos)] = cellRoom 
  
@@ -198,22 +203,42 @@ def generateWorld(layers):
                 generateRoom([x,y]) 
  
     saveGame(playerpos[0], playerpos[1]) 
- 
-     
-def combatStartData() :
-    currentName = enemyNames[r.randint(0, len(enemyNames) - 1)] 
+
+def gameOver():
+    cellDoors.clear()
+    cellTypes.clear()
+    cellEnemies.clear()
+
+    generateWorld()
+
+    with open('saveData', 'wb') as file: 
+        saveList = [10, 10, 3, '', 20, 5, 0, 0, 0] 
+        pickle.dump(saveList, file) 
+        file.close() 
+
+    print("You died")
+    print(f"You moved {moveTimes} times")
+    print(f"You killed {killCount} enemies")
+    print(f"You had {playerGold} gold")
+    print("Creating new world")
+
+   
+def randomEnemy() :
+    currentName = r.choice[enemyNames]
     enemyHealth = r.randint(5, 15)   
     enemyStrength = r.randint(1, 3)
 
-    return [currentName, enemyHealth, enemyStrength]           
+    return [currentName, enemyStrength, enemyHealth]           
  
-def doCombat(startData): 
+def doCombat(): 
+    global playerpos
+    startData = cellEnemies[playerpos[0], playerpos[1]]
+
     currentName = startData[0]
-    enemyHealth = startData[1]
-    enemyStrength = startData[2]
+    enemyHealth = startData[2]
+    enemyStrength = startData[1]
     global playerHealth
     global playerGold
-    global playerpos
     global cellTypes
 
     print("You are now fighting a(n) " + currentName) 
@@ -243,11 +268,15 @@ def doCombat(startData):
  
         if(playerAttack == enemyAttack): 
             damage = playerStrength + r.randint(-2, 2)
+            if damage < 1:
+                damage = 1
             enemyHealth -= damage 
             print("You hit the " + currentName + "! It took " + str(damage) + " damage and is now at " + str(enemyHealth) + " HP.") 
             print("---------------------------------------------------------------") 
  
-            if enemyHealth <= 0: 
+            if enemyHealth <= 0: # enemy is killed
+                print(f"You killed the {currentName}! You got {enemyHealth} gold!")
+                killCount += 1
                 break 
         else: 
             print("You missed!") 
@@ -274,13 +303,18 @@ def doCombat(startData):
             print("You succesfully avoided the attack!") 
             print("-----------------------------------------------------------------------------------------------------") 
         else: 
-            playerHealth -= enemyStrength 
-            print("The " + currentName + " hit you! You took " + str(enemyStrength) + " damage and you are now at " +str(playerHealth) + " HP") 
+            enemyDamage = enemyStrength + r.randint(-2, 2)
+            if enemyDamage < 1:
+                enemyDamage = 1
+            playerHealth -= enemyDamage 
+            print("The " + currentName + " hit you! You took " + str(enemyDamage) + " damage and you are now at " +str(playerHealth) + " HP") 
             print("-----------------------------------------------------------------------------------------------------") 
  
         print("The turn is over. Type 'c' to continue to the next turn.") 
         print("Type 'h' to look at your health and the enemies health") 
         print("Type 's' to look at attack power") 
+
+        cellEnemies[playerpos[0], playerpos[1]] = [currentName, enemyStrength, enemyHealth]
  
         continueInput = input("Type here: ") 
  
@@ -478,7 +512,7 @@ def explore(x, y):
 
 
     if cellTypes[x,y] == "enemy":
-        doCombat(combatStartData())
+        doCombat()
     elif cellTypes[x,y] == "shop":
         shopCell()
 
@@ -521,6 +555,7 @@ def explore(x, y):
         x -= 1 
  
     saveGame(x, y) 
+    moveTimes += 1
  
     return [x, y] 
  
@@ -535,6 +570,7 @@ if not bool(worldSave) or manualWorldGenerate:
 else: 
     cellDoors = worldSave[0] 
     cellTypes = worldSave[1] 
+    cellEnemies = worldSave[2]
  
 if bool(loadGame) and not manualWorldGenerate: 
     playerHealth = saveList[0] 
@@ -544,6 +580,8 @@ if bool(loadGame) and not manualWorldGenerate:
     damageIncreaseCost = saveList[4] 
     healthIncreaseCost = saveList[5]   
     playerpos = [saveList[6], saveList[7]] 
+    moveTimes = saveList[8]
+    killCount = saveList[9]
  
 print(f"Number of rooms: {len(cellDoors)}") 
  
