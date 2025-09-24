@@ -2,7 +2,7 @@ import pickle
 import random as r  
  
 enemyHealth = 0 
-playerHealth = 1  
+playerHealth = 10 
 maxPlayerHealth = 10   
  
 playerpos = [0, 0] 
@@ -26,7 +26,9 @@ enemyGoldDrop = r.randint(5, 20)
 playerGold = 0   
  
 inshop = False   
-gameRunning = True   
+gameRunning = True 
+
+alive = True
  
 worldLayers = 20 
  
@@ -214,6 +216,9 @@ def gameOver():
     cellDoors.clear()
     cellTypes.clear()
     cellEnemies.clear()
+
+    global alive
+    alive = False 
 
     generateWorld(worldLayers)
 
@@ -518,54 +523,56 @@ def explore(x, y):
     elif cellTypes[x,y] == "shop":
         shopCell()
 
-    print("What direction do you want to go") 
+    if alive == True:       
+
+        print("What direction do you want to go") 
  
-    currentCellDoors = [] 
-    doorPlaceholder = cellDoors[tuple(playerpos)] 
-    validDirections = [] 
+        currentCellDoors = [] 
+        doorPlaceholder = cellDoors[tuple(playerpos)] 
+        validDirections = [] 
  
-    for i in doorPlaceholder: 
-        currentCellDoors.append(i) 
+        for i in doorPlaceholder: 
+            currentCellDoors.append(i) 
  
-    if("north" in currentCellDoors): 
-        print("Type 'n' to go north") 
-        validDirections.append('n') 
-    if("south" in currentCellDoors): 
-        print("Type 's' to go south") 
-        validDirections.append('s') 
-    if("east" in currentCellDoors): 
-        print("Type 'e' to go east") 
-        validDirections.append('e') 
-    if("west" in currentCellDoors): 
-        print("Type 'w' to go west") 
-        validDirections.append('w') 
+        if("north" in currentCellDoors): 
+            print("Type 'n' to go north") 
+            validDirections.append('n') 
+        if("south" in currentCellDoors): 
+            print("Type 's' to go south") 
+            validDirections.append('s') 
+        if("east" in currentCellDoors): 
+            print("Type 'e' to go east") 
+            validDirections.append('e') 
+        if("west" in currentCellDoors): 
+            print("Type 'w' to go west") 
+            validDirections.append('w') 
  
-    direction = input("Pick a direction: ") 
- 
-    while not direction in validDirections: 
-        print("That direction is invalid") 
-        print(" ") 
         direction = input("Pick a direction: ") 
+ 
+        while not direction in validDirections: 
+            print("That direction is invalid") 
+            print(" ") 
+            direction = input("Pick a direction: ") 
          
-    if direction == "n":         
-        y += 1 
-    elif direction == "s": 
-        y -= 1 
-    elif direction == "e": 
-        x += 1 
-    elif direction == "w": 
-        x -= 1 
+        if direction == "n":         
+            y += 1 
+        elif direction == "s": 
+            y -= 1 
+        elif direction == "e": 
+            x += 1 
+        elif direction == "w": 
+            x -= 1 
  
-    saveGame(x, y) 
-    moveTimes += 1
+        saveGame(x, y) 
+        moveTimes += 1
  
-    return [x, y] 
+        return [x, y] 
  
      
 saveList = loadGame()
 worldSave = loadSavedWorld()
  
-manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
  
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
@@ -588,7 +595,13 @@ if bool(loadGame) and not manualWorldGenerate:
 print(f"Number of rooms: {len(cellDoors)}") 
  
 while gameRunning: 
+    if not alive:
+        gameRunning == False
+        break
+
     loadGame() 
     playerpos = explore(playerpos[0], playerpos[1]) 
+
+    
  
  
