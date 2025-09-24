@@ -13,7 +13,7 @@ cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is struct
  
 dodgeInput = ""   
  
-enemyNames = ["RatBat", "Wanderer", "Imp", "Sludge", "Dark Blademaster", "Lost Ophan"] 
+enemyNames = ["RatBat", "Wanderer", "Imp", "Sludge", "Dark Blademaster", "Lost Ophan", "Shroomling", "Oculus"] 
  
 playerAttack = 0   
 enemyAttack = 0   
@@ -223,8 +223,9 @@ def gameOver():
     print("Creating new world")
 
    
-def randomEnemy() :
-    currentName = r.choice[enemyNames]
+def randomEnemy():
+    global enemyNames
+    currentName = r.choice[tuple(enemyNames)]
     enemyHealth = r.randint(5, 15)   
     enemyStrength = r.randint(1, 3)
 
@@ -563,7 +564,7 @@ def explore(x, y):
 saveList = loadGame()
 worldSave = loadSavedWorld()
  
-manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
  
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
