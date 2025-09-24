@@ -2,7 +2,7 @@ import pickle
 import random as r  
  
 enemyHealth = 0 
-playerHealth = 10   
+playerHealth = 1  
 maxPlayerHealth = 10   
  
 playerpos = [0, 0] 
@@ -13,7 +13,7 @@ cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is struct
  
 dodgeInput = ""   
  
-enemyNames = ["RatBat", "Wanderer", "Imp", "Sludge", "Dark Blademaster", "Lost Ophan", "Shroomling", "Oculus"] 
+enemyNames = ["RatBat", "Wanderer", "Imp", "Sludge", "Dark Blademaster", "Lost Orphan", "Shroomling", "Oculus"] 
  
 playerAttack = 0   
 enemyAttack = 0   
@@ -63,6 +63,15 @@ def loadSavedWorld():
         return loadedData 
      
     file.close() 
+
+def randomEnemy():
+    global enemyNames
+    currentName = r.choice(tuple(enemyNames))
+    enemyHealth = r.randint(5, 15)   
+    enemyStrength = r.randint(1, 3)
+    enemyGoldDrop = enemyHealth * enemyStrength
+
+    return [currentName, enemyStrength, enemyHealth, enemyGoldDrop]    
  
 # A basic function to confirm an action. Mostly used in the shop. 
 def confirm(message): 
@@ -196,10 +205,7 @@ def generateWorld(layers):
         for y in range(-layers, layers + 1): 
             if x == 0 and y == 0: 
                 generateFirstRoom() 
-            else: 
-                if x > 0: 
-                    print("x is positive") 
- 
+            else:                      
                 generateRoom([x,y]) 
  
     saveGame(playerpos[0], playerpos[1]) 
@@ -209,7 +215,7 @@ def gameOver():
     cellTypes.clear()
     cellEnemies.clear()
 
-    generateWorld()
+    generateWorld(worldLayers)
 
     with open('saveData', 'wb') as file: 
         saveList = [10, 10, 3, '', 20, 5, 0, 0, 0] 
@@ -220,16 +226,7 @@ def gameOver():
     print(f"You moved {moveTimes} times")
     print(f"You killed {killCount} enemies")
     print(f"You had {playerGold} gold")
-    print("Creating new world")
-
-   
-def randomEnemy():
-    global enemyNames
-    currentName = r.choice[tuple(enemyNames)]
-    enemyHealth = r.randint(5, 15)   
-    enemyStrength = r.randint(1, 3)
-
-    return [currentName, enemyStrength, enemyHealth]           
+    print("Creating new world")       
  
 def doCombat(): 
     global playerpos
@@ -238,9 +235,11 @@ def doCombat():
     currentName = startData[0]
     enemyHealth = startData[2]
     enemyStrength = startData[1]
+    enemyGoldDrop = startData[3]
     global playerHealth
     global playerGold
     global cellTypes
+    global killCount
 
     print("You are now fighting a(n) " + currentName) 
     print("It has a strength of " + str(enemyStrength)) 
@@ -276,8 +275,13 @@ def doCombat():
             print("---------------------------------------------------------------") 
  
             if enemyHealth <= 0: # enemy is killed
-                print(f"You killed the {currentName}! You got {enemyHealth} gold!")
+                print(f"You killed the {currentName}! You got {enemyGoldDrop} gold!")
                 killCount += 1
+                saveGame(playerpos[0], playerpos[1])
+ 
+                playerGold += enemyGoldDrop 
+
+                cellTypes[tuple(playerpos)] = "empty"
                 break 
         else: 
             print("You missed!") 
@@ -310,6 +314,10 @@ def doCombat():
             playerHealth -= enemyDamage 
             print("The " + currentName + " hit you! You took " + str(enemyDamage) + " damage and you are now at " +str(playerHealth) + " HP") 
             print("-----------------------------------------------------------------------------------------------------") 
+
+            if playerHealth <= 0:
+                gameOver()
+                break
  
         print("The turn is over. Type 'c' to continue to the next turn.") 
         print("Type 'h' to look at your health and the enemies health") 
@@ -333,13 +341,6 @@ def doCombat():
 
         if continueInput == "c":
             continue
-
-    print("The enemy has been killed!") 
-    saveGame(playerpos[0], playerpos[1])
- 
-    playerGold += enemyGoldDrop 
-    
-    cellTypes[playerpos] = "empty"
  
 def shopCell(): 
     goToShop = input("Do you want to go to shop? Type 'y' for yes or 'n' for no. Type here: ") 
@@ -510,7 +511,7 @@ def explore(x, y):
     print("You are currently on (" + str(playerpos[0]) + ", " + str(playerpos[1]) + ")") 
     print(f"It is a(n) {cellTypes[x,y]} room") 
     
-
+    global moveTimes
 
     if cellTypes[x,y] == "enemy":
         doCombat()
