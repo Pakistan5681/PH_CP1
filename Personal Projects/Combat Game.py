@@ -510,6 +510,31 @@ def shopCell():
             else: 
                 print("staying in shop")
                 continue 
+
+worldMap = []
+
+for i in range(worldLayers):
+    worldMap.append([])
+
+def generateMapSquare(x, y):
+    currentCellDoors = cellDoors[[x, y]]
+    midX = 0
+    midY = 0
+
+    midX = 2*x
+    midY = 2*y
+
+    for x in range(-1, 2):
+        for y in range(-1, 2):
+            row = worldMap[midY + y]
+            row[midX + x] = "W"
+
+    
+
+    
+
+def generateMap():
+    pass
  
 def explore(x, y): 
     print(" ") 
