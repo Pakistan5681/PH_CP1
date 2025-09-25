@@ -528,7 +528,11 @@ def generateMapSquare(x, y):
         for y in range(-1, 2):
             row = worldMap[midY + y]
             row[midX + x] = "W"
+        
+    row = worldMap[midY]
+    row[midX] = 0
 
+    
     
 
     
