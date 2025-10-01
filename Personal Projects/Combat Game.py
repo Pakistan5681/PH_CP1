@@ -10,7 +10,9 @@ playerpos = [0, 0]
 cellDoors = {} # example ([6, 2], [north, west, east]) 
 cellTypes = {} # example ([3, 7], 'shop') 
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
-cellTreasure = {} # example ([13. -6], )
+cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [ITEM, AMOUNT]
+
+itemInventory = {'damage potions' : 0, "health potions" : 0, 'map' : False} 
  
 dodgeInput = ""   
  
@@ -116,7 +118,8 @@ def randomRoomType(roomX, roomY):
     number = r.randint(0, 100) 
 
     if number <= 10:
-        return "treasure"
+        cellTreasure[roomX, roomY] = randomTreasure()
+        return "treasure"        
     elif number <= 50: # 40% chance of room being empty 
         return "empty" 
     elif number <= 75: # 25% chance of room having an enemy 
@@ -127,6 +130,25 @@ def randomRoomType(roomX, roomY):
     else: 
         print("ERROR") 
         return "empty" 
+    
+def randomTreasure():
+    randomTreasure = r.randint(0, 2)
+    treasureType = ""
+    amount = 0
+
+    if randomTreasure == 0:
+        treasureType = "gold"
+        amount = r.randint(10, 30)
+    elif randomTreasure == 1:
+        treasureType = "damage potions"
+        amount = r.randint(1, 2)
+    elif randomTreasure == 2:
+        treasureType = "health potions"
+        amount = r.randint(1, 2)
+
+    return [treasureType, amount]
+
+
     
 def startNewGame():
     global enemyHealthMin
@@ -372,14 +394,17 @@ def doCombat():
     global cellTypes
     global killCount
     global escapeChance
+    global itemInventory
+
+    damageIncrease = False
 
     print("You are now fighting a(n) " + currentName) 
     print("It has a strength of " + str(enemyStrength)) 
     print("It has " + str(enemyHealth) + " HP") 
-    print(" ") 
-    print(f"You can fight the {currentName} or you can run. ")
-
+    print(f"You can fight the {currentName} or you can run.")
     run = input("Type 'r' to run. Put anything else to fight the enemy.").lower().strip()
+    print(" ") 
+        
     escaping = False
 
     if run == "r":
@@ -390,6 +415,35 @@ def doCombat():
     while playerHealth > 0 and enemyHealth > 0 and not escaping: 
         print("The turn begins!") 
         print("---------------------------------------------------------------") 
+
+        useItem = input("Do you want to use an item? Type 'y' for yes and 'n' for no.")
+
+        while useItem != 'y' and useItem != 'n':
+            useItem = input("Do you want to use an item? Type 'y' for yes and 'n' for no.")
+        
+        if useItem == "y":
+            while True:
+                print("---------------------------------------------------------------")
+                itemToUse = ""
+
+                possibleInput = ['c']
+
+                if itemInventory["damage potions"] > 0:
+                    print("Type 'd' to use a damage potion.")
+                    possibleInput.append('d')
+
+                if itemInventory["health potions"] > 0:
+                    print("Type 'h' to use a health potion.")
+                    possibleInput.append('h')
+
+                print("Type 'c' to cancel")
+
+                while not itemToUse in possibleInput:
+                    itemToUse = input("What item would you like to use? ")
+
+                if 
+            
+
         dodgeInput = input("Heavy attack (h) or light attack (l)? Type here: ") 
  
         while dodgeInput != "h" and dodgeInput != "l": 
@@ -684,6 +738,27 @@ def shopCell():
                 print("staying in shop")
                 continue 
 
+def treasureRoom():
+    global playerpos
+    global playerGold
+    global cellTreasure
+    global itemInventory
+
+    print(" ")
+    print("You found some treasure!")
+
+    treasure = cellTreasure[playerpos[0], playerpos[1]]
+    print(f"You found {treasure[1]} {treasure[0]}!")
+
+    if treasure[0] != "gold":
+        itemInventory[treasure[0]] = itemInventory[treasure[0]] + treasure[1]
+        print(f"You now have {itemInventory[treasure[0]]} {treasure[0]}")
+    else:
+        playerGold += treasure[1]
+        print(f"You now have {playerGold} gold!")
+
+    print(" ")
+
 worldMap = []
 
 for i in range(worldLayers):
@@ -712,7 +787,6 @@ def generateMap():
     for x in range(-worldLayers, worldLayers + 1):
         for y in range(-worldLayers, worldLayers + 1):
             generateMapSquare(x, y)
-            print("afrwsefw")
  
 def explore(x, y): 
     print(" ") 
@@ -725,6 +799,9 @@ def explore(x, y):
         doCombat()
     elif cellTypes[x,y] == "shop":
         shopCell()
+    elif cellTypes[x,y] == "treasure":
+        treasureRoom()
+    
 
     if alive == True:       
 
