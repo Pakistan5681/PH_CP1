@@ -441,8 +441,18 @@ def doCombat():
                 while not itemToUse in possibleInput:
                     itemToUse = input("What item would you like to use? ")
 
-                if 
-            
+                if itemToUse == "c":
+                    break
+                elif itemToUse == "d":
+                    damageIncrease = True
+                    itemInventory["damage potions"] -= 1
+                    print("Damage increased!")
+                elif itemToUse == "h":
+                    itemInventory["health potions"] -= 1
+                    randomHealth = r.randint(5,  10)
+                    playerHealth += randomHealth
+                    print(f"Recovered {randomHealth} HP!")
+       
 
         dodgeInput = input("Heavy attack (h) or light attack (l)? Type here: ") 
  
