@@ -10,6 +10,7 @@ playerpos = [0, 0]
 cellDoors = {} # example ([6, 2], [north, west, east]) 
 cellTypes = {} # example ([3, 7], 'shop') 
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
+cellTreasure = {} # example ([13. -6], )
  
 dodgeInput = ""   
  
@@ -20,6 +21,18 @@ enemyAttack = 0
  
 playerStrength = 3   
 enemyStrength = 1   
+
+#difficulty parameters
+enemyDamageMin = 1
+enemyDamageMax = 3
+
+enemyHealthMin = 5
+enemyHealthMax = 15
+
+escapeChance = 50
+
+difficulty = "normal"
+saveName = ""
  
 enemyGoldDrop = r.randint(5, 20)   
  
@@ -27,6 +40,8 @@ playerGold = 0
  
 inshop = False   
 gameRunning = True 
+
+retreatChance = 50 # percentage chance for a succesful retreat mid-battle
 
 alive = True
  
@@ -44,7 +59,7 @@ currentName = ""
  
 def saveGame(playerX, playerY): 
     with open('saveData', 'wb') as file: 
-        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY, moveTimes, killCount] 
+        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY, moveTimes, killCount, playerGold, saveName] 
         pickle.dump(saveList, file) 
         file.close() 
     with open('worldSave', 'wb') as file: 
@@ -69,8 +84,8 @@ def loadSavedWorld():
 def randomEnemy():
     global enemyNames
     currentName = r.choice(tuple(enemyNames))
-    enemyHealth = r.randint(5, 15)   
-    enemyStrength = r.randint(1, 3)
+    enemyHealth = r.randint(enemyHealthMin, enemyHealthMax)   
+    enemyStrength = r.randint(enemyDamageMin, enemyDamageMax)
     enemyGoldDrop = enemyHealth * enemyStrength
 
     return [currentName, enemyStrength, enemyHealth, enemyGoldDrop]    
@@ -99,8 +114,10 @@ def randomBool(trueChance): # trueChance is the percentage chance of the output 
      
 def randomRoomType(roomX, roomY): 
     number = r.randint(0, 100) 
- 
-    if number <= 50: # 50% chance of room being empty 
+
+    if number <= 10:
+        return "treasure"
+    elif number <= 50: # 40% chance of room being empty 
         return "empty" 
     elif number <= 75: # 25% chance of room having an enemy 
         cellEnemies[roomX, roomY] = randomEnemy()
@@ -110,6 +127,112 @@ def randomRoomType(roomX, roomY):
     else: 
         print("ERROR") 
         return "empty" 
+    
+def startNewGame():
+    global enemyHealthMin
+    global enemyHealthMax
+    global enemyDamageMin
+    global enemyDamageMax
+    global difficulty
+    global playerHealth
+    global playerStrength
+    global escapeChance
+    global saveName
+
+    difficultyInput = ""
+
+    isComplete = False
+
+    print("Welcome to Pakistan's dungeon!")
+
+    while not isComplete:
+        print(" ")
+        print("Choose your difficulty. Type 'e' for easy, 'n' for normal, 'h' for hard, 'm' for master, and 'i' for impossible. Higher difficulties give higher rewards.")
+        difficultyInput = input("Answer here: ")
+        print(" ")
+
+        if difficultyInput == "i":
+            print("Are you sure you want to play on impossible? It's extremely unfair and is designed to cause suffering.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+        elif difficultyInput == "m":
+            print("Are you sure you want to play on master? It's very difficult and shouldn't be played on before playing on an easier difficulty.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+        elif difficultyInput == "h":
+            print("Are you sure you want to play on hard? Its a tough challenge, requiring skill and strategy to play.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+        elif difficultyInput == "n":
+            print("Are you sure you want to play on normal? Its provides a fun and casual challenge while still requiring skill.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+        elif difficultyInput == "e":
+            print("Are you sure you want to play on easy? Its the easiest gamemode, perfect for learning how the game works. Not much of a challenge.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+
+        if difficultyInput != 'e' and difficultyInput != 'n' and difficultyInput != 'h' and difficultyInput != 'm' and difficultyInput != 'i':
+            continue
+        else:
+            isComplete = True
+            break
+
+    if difficultyInput == "e":
+        enemyHealthMin = 3
+        enemyHealthMax = 10
+        enemyDamageMin = 1
+        enemyDamageMax = 2
+        playerHealth = 15
+        playerStrength = 5
+        escapeChance = 75
+        difficulty = "easy"
+    elif difficultyInput == "n":
+        enemyHealthMin = 5
+        enemyHealthMax = 15
+        enemyDamageMin = 1
+        enemyDamageMax = 3
+        playerHealth = 10
+        escapeChance = 50
+        playerStrength = 3
+        difficulty = "normal"
+    elif difficultyInput == "h":
+        enemyHealthMin = 8
+        enemyHealthMax = 20
+        enemyDamageMin = 1
+        enemyDamageMax = 5
+        playerHealth = 10
+        playerStrength = 3
+        escapeChance = 50
+        difficulty = "hard"
+    elif difficultyInput == "m":
+        enemyHealthMin = 10
+        enemyHealthMax = 25
+        enemyDamageMin = 2
+        enemyDamageMax = 7
+        playerHealth = 8
+        playerStrength = 2
+        escapeChance = 25
+        difficulty = "master"
+    elif difficultyInput == "i":
+        enemyHealthMin = 15
+        enemyHealthMax = 30
+        enemyDamageMin = 3
+        enemyDamageMax = 10
+        playerHealth = 5
+        playerStrength = 1
+        escapeChance = 10
+        difficulty = "impossible"
+    else:
+        print("something rather horrendous broke")
+
+    print(" ")
+    saveName = input("What would you like your save to be called? ")
          
  
 def generateRoom(roomPos): 
@@ -202,6 +325,8 @@ def generateFirstRoom():
     cellTypes[tuple([0,0])] = "empty" 
      
 def generateWorld(layers): 
+    startNewGame()
+
     for x in range(-layers, layers + 1): 
          
         for y in range(-layers, layers + 1): 
@@ -231,7 +356,8 @@ def gameOver():
     print(f"You moved {moveTimes} times")
     print(f"You killed {killCount} enemies")
     print(f"You had {playerGold} gold")
-    print("Creating new world")       
+    print("Creating new world")  
+    print("Restart program to play again in the new world")   
  
 def doCombat(): 
     global playerpos
@@ -245,13 +371,23 @@ def doCombat():
     global playerGold
     global cellTypes
     global killCount
+    global escapeChance
 
     print("You are now fighting a(n) " + currentName) 
     print("It has a strength of " + str(enemyStrength)) 
     print("It has " + str(enemyHealth) + " HP") 
     print(" ") 
+    print(f"You can fight the {currentName} or you can run. ")
+
+    run = input("Type 'r' to run. Put anything else to fight the enemy.").lower().strip()
+    escaping = False
+
+    if run == "r":
+        print(" ")
+        print("Retreating")
+        escaping = True
  
-    while playerHealth > 0 and enemyHealth > 0: 
+    while playerHealth > 0 and enemyHealth > 0 and not escaping: 
         print("The turn begins!") 
         print("---------------------------------------------------------------") 
         dodgeInput = input("Heavy attack (h) or light attack (l)? Type here: ") 
@@ -276,6 +412,9 @@ def doCombat():
             if damage < 1:
                 damage = 1
             enemyHealth -= damage 
+
+            if enemyHealth < 0:
+                enemyHealth = 0
             print("You hit the " + currentName + "! It took " + str(damage) + " damage and is now at " + str(enemyHealth) + " HP.") 
             print("---------------------------------------------------------------") 
  
@@ -317,6 +456,9 @@ def doCombat():
             if enemyDamage < 1:
                 enemyDamage = 1
             playerHealth -= enemyDamage 
+
+            if playerHealth < 0:
+                playerHealth = 0
             print("The " + currentName + " hit you! You took " + str(enemyDamage) + " damage and you are now at " +str(playerHealth) + " HP") 
             print("-----------------------------------------------------------------------------------------------------") 
 
@@ -325,8 +467,10 @@ def doCombat():
                 break
  
         print("The turn is over. Type 'c' to continue to the next turn.") 
+        print("Type 'e' to attempt to retreat")
         print("Type 'h' to look at your health and the enemies health") 
         print("Type 's' to look at attack power") 
+
 
         cellEnemies[playerpos[0], playerpos[1]] = [currentName, enemyStrength, enemyHealth]
  
@@ -336,11 +480,40 @@ def doCombat():
             if continueInput == "h": 
                 print("Your current HP is " + str(playerHealth)) 
                 print("The enemies current HP is " + str(enemyHealth)) 
+            elif continueInput == "e":
+                print(f"If you try to escape from the {currentName}, you have a {escapeChance}% chance of success.")
+                print(f"If you succeed, you will be able to go to a different room and stop fighting the {currentName}.")
+                print(f"You you fail the {currentName} will attack you. This attack will hit uou 100% of the time.")
+
+                if confirm("Are you sure you want to attempt a retreat?"):
+                    retreat = r.randint(0, 100)
+                    if retreat < retreatChance:
+                        print("Retreat Succesful!")
+                        break
+                    else:
+                        print("Retreat failed!")
+                        enemyDamage = enemyStrength + r.randint(-2, 2)
+
+                        if enemyDamage < 1:
+                            enemyDamage = 1
+                        playerHealth -= enemyDamage 
+
+                        if playerHealth < 0:
+                            playerHealth = 0
+
+                        print("The " + currentName + " hit you! You took " + str(enemyDamage) + " damage and you are now at " + str(playerHealth) + " HP") 
+                        print("-----------------------------------------------------------------------------------------------------") 
+
+                        if playerHealth <= 0:
+                            gameOver()
+                            break
+
+                    
             elif continueInput == "s": 
                 print("Your attack power is " + str(playerStrength)) 
                 print("The enemies attack power is " + str(enemyStrength)) 
             else: 
-                print("That input is invalid. Type 'c', 'h', or 's'.") 
+                print("That input is invalid. Type 'c', 'e', 'h', or 's'.") 
  
             continueInput = input("Type here: ") 
 
@@ -439,6 +612,7 @@ def shopCell():
                     playerGold -= healthIncreaseCost 
                     healthIncreaseCost *= 1.5 
                     playerHealth += 1 
+                    maxPlayerHealth += 1
  
                 print("Would you like to go back to the shop?") 
                 purchase = input("Type 'y' for yes and 'n' for no: ") 
@@ -489,10 +663,9 @@ def shopCell():
  
                 if recoverInput == "f": 
                     healthToRecover = maxRecover 
-                    print("You will recover " + str(healthToRecover) + " health. It costs " +  str(healthToRecover) + " gold.") 
-                    confirm("Do you want to recover this much health") 
+                    print("You will recover " + str(healthToRecover) + " health. It costs " +  str(healthToRecover) + " gold.")                      
  
-                    if inputBool: 
+                    if confirm("Do you want to recover this much health"): 
                         playerHealth += healthToRecover 
                         playerGold -= healthToRecover 
                 else: 
@@ -517,7 +690,9 @@ for i in range(worldLayers):
     worldMap.append([])
 
 def generateMapSquare(x, y):
-    currentCellDoors = cellDoors[[x, y]]
+    print("Maiing room")
+    global worldMap
+    currentCellDoors = cellDoors[tuple[x, y]]
     midX = 0
     midY = 0
 
@@ -527,18 +702,17 @@ def generateMapSquare(x, y):
     for x in range(-1, 2):
         for y in range(-1, 2):
             row = worldMap[midY + y]
-            row[midX + x] = "W"
-        
+            row[midX + x] = "W" 
+
     row = worldMap[midY]
-    row[midX] = 0
-
-    
-    
-
-    
+    row[midX] = "0"
 
 def generateMap():
-    pass
+    global worldLayers
+    for x in range(-worldLayers, worldLayers + 1):
+        for y in range(-worldLayers, worldLayers + 1):
+            generateMapSquare(x, y)
+            print("afrwsefw")
  
 def explore(x, y): 
     print(" ") 
@@ -596,12 +770,11 @@ def explore(x, y):
         moveTimes += 1
  
         return [x, y] 
- 
      
 saveList = loadGame()
 worldSave = loadSavedWorld()
  
-manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
  
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
@@ -620,8 +793,12 @@ if bool(loadGame) and not manualWorldGenerate:
     playerpos = [saveList[6], saveList[7]] 
     moveTimes = saveList[8]
     killCount = saveList[9]
+    playerGold = saveList[10]
+    saveName = saveName[11]
  
-print(f"Number of rooms: {len(cellDoors)}") 
+print("Loading save...")
+print(f"Save name: {saveName}")
+print(f"Difficulty: {difficulty}")
  
 while gameRunning: 
     if not alive:
@@ -630,7 +807,3 @@ while gameRunning:
 
     loadGame() 
     playerpos = explore(playerpos[0], playerpos[1]) 
-
-    
- 
- 
