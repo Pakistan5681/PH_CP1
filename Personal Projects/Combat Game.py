@@ -12,7 +12,7 @@ cellTypes = {} # example ([3, 7], 'shop')
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
 cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [ITEM, AMOUNT]
 
-itemInventory = {'damage potions' : 0, "health potions" : 0, "agility potions" : 0} 
+itemInventory = {'damage potions' : 999, "health potions" : 999, "agility potions" : 999} 
  
 dodgeInput = ""   
  
@@ -132,7 +132,7 @@ def randomRoomType(roomX, roomY):
         return "empty" 
     
 def randomTreasure():
-    randomTreasure = r.randint(0, 2)
+    randomTreasure = r.randint(0, 3)
     treasureType = ""
     amount = 0
 
@@ -144,6 +144,9 @@ def randomTreasure():
         amount = r.randint(1, 2)
     elif randomTreasure == 2:
         treasureType = "health potions"
+        amount = r.randint(1, 2)
+    elif randomTreasure == 3:
+        treasureType = "agility potions"
         amount = r.randint(1, 2)
 
     return [treasureType, amount]
@@ -397,6 +400,7 @@ def doCombat():
     global itemInventory
 
     damageIncrease = False
+    agility = False
 
     print("You are now fighting a(n) " + currentName) 
     print("It has a strength of " + str(enemyStrength)) 
@@ -429,12 +433,16 @@ def doCombat():
                 possibleInput = ['c']
 
                 if itemInventory["damage potions"] > 0:
-                    print("Type 'd' to use a damage potion.")
+                    print(f"Type 'd' to use a damage potion. You currently have {itemInventory["damage potions"]}")
                     possibleInput.append('d')
 
-                if itemInventory["health potions"] > 0:
-                    print("Type 'h' to use a health potion.")
+                if itemInventory["health potions"] > 0 and playerHealth < maxPlayerHealth:
+                    print(f"Type 'h' to use a health potion. You currently have {itemInventory["health potions"]}")
                     possibleInput.append('h')
+                
+                if itemInventory["agility potions"] > 0:
+                    print(f"Type 'a' to use an agility potion. You currently have {itemInventory["agility potions"]}")
+                    possibleInput.append('a')
 
                 print("Type 'c' to cancel")
 
@@ -450,8 +458,17 @@ def doCombat():
                 elif itemToUse == "h":
                     itemInventory["health potions"] -= 1
                     randomHealth = r.randint(5,  10)
+
+                    if randomHealth > maxPlayerHealth - playerHealth:
+                        randomHealth = maxPlayerHealth - playerHealth
+
                     playerHealth += randomHealth
                     print(f"Recovered {randomHealth} HP!")
+                elif itemToUse == "a":
+                    agility = True
+                    itemInventory["agility potions"] -= 1
+                    print("You maximized your agility!")
+                
        
 
         dodgeInput = input("Heavy attack (h) or light attack (l)? Type here: ") 
@@ -470,9 +487,16 @@ def doCombat():
             break 
  
         enemyAttack = r.randint(1, 2) 
+
+        if agility:
+            playerAttack = enemyAttack
  
         if(playerAttack == enemyAttack): 
             damage = playerStrength + r.randint(-2, 2)
+
+            if damageIncrease:
+                damage *= 2
+
             if damage < 1:
                 damage = 1
             enemyHealth -= damage 
@@ -511,6 +535,9 @@ def doCombat():
             break 
  
         enemyAttack = r.randint(1, 2) 
+
+        if agility:
+            playerAttack = enemyAttack
  
         if(playerAttack == enemyAttack): 
             print("You succesfully avoided the attack!") 
