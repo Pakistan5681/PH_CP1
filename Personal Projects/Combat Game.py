@@ -12,7 +12,7 @@ cellTypes = {} # example ([3, 7], 'shop')
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
 cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [ITEM, AMOUNT]
 
-itemInventory = {'damage potions' : 0, "health potions" : 0, 'map' : False} 
+itemInventory = {'damage potions' : 0, "health potions" : 0, "agility potions" : 0} 
  
 dodgeInput = ""   
  
