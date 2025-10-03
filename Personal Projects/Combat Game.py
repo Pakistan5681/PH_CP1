@@ -28,6 +28,12 @@ enemyStrength = 1
 enemyDamageMin = 1
 enemyDamageMax = 3
 
+exitDoorPos = [0,0]
+keyChestPos = [0,0]
+
+killsNeeded = 0
+goldNeeded = 0
+
 enemyHealthMin = 5
 enemyHealthMax = 15
 
@@ -35,6 +41,7 @@ escapeChance = 50
 
 difficulty = "normal"
 saveName = ""
+gameLength = "normal"
  
 enemyGoldDrop = r.randint(5, 20)   
  
@@ -163,6 +170,7 @@ def startNewGame():
     global playerStrength
     global escapeChance
     global saveName
+    global saveLength
 
     difficultyInput = ""
 
@@ -255,6 +263,12 @@ def startNewGame():
         difficulty = "impossible"
     else:
         print("something rather horrendous broke")
+
+    isComplete = False
+
+    while not isComplete:
+        print("How long would you like your game to be? Type 's' for short, 'n' for normal, 'l' for long, or 't' for The Long Haul")
+        
 
     print(" ")
     saveName = input("What would you like your save to be called? ")
