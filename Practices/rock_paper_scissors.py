@@ -14,6 +14,8 @@ while True:
         if RPSInput == "rock" or RPSInput == "paper" or RPSInput == "scissors":
             break
 
+        print("Input invalid")
+
     enemyPlay = r.randint(0,2)
     RPSEnemy = ""
 

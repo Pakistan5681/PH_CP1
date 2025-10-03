@@ -171,6 +171,8 @@ def startNewGame():
     global escapeChance
     global saveName
     global saveLength
+    global killsNeeded
+    global goldNeeded
 
     difficultyInput = ""
 
@@ -268,6 +270,45 @@ def startNewGame():
 
     while not isComplete:
         print("How long would you like your game to be? Type 's' for short, 'n' for normal, 'l' for long, or 't' for The Long Haul")
+        lengthInput = input("Answer here: ")
+
+        if lengthInput == "s":
+            print("Are you sure you want to play a short game? Its perfect for a one-session game if you're short on time.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+            else:
+                break
+        elif lengthInput == "n":
+            print("Are you sure you want to play a normal length game? Its good for one longer session or 2-3 shorter ones.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+            else:
+                break
+        elif lengthInput == "l":
+            print("Are you sure you want to play a long game? Its good for some longer sessions or if you want to play this over many sessions")
+
+            if(not confirm("Are you sure? ")):
+                continue
+            else:
+                break
+        elif lengthInput == "t":
+            print("Are you sure you want to play The Long Haul? Be prepared, it will take many, many hours to beat and is for only the most determined.")
+
+            if(not confirm("Are you sure? ")):
+                continue
+            else:
+                break
+        else:
+            print("Invalid input")
+            continue
+
+    if lengthInput == "s":
+        killsNeeded = 5
+        goldNeeded = 50
+        saveLength 
+
         
 
     print(" ")
