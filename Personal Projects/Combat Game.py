@@ -12,6 +12,8 @@ cellTypes = {} # example ([3, 7], 'shop')
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
 cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [ITEM, AMOUNT]
 
+specialTiles = {"arena" : [0,0], "escape door" : [0,0], "legendary chest" : [0,0]}
+
 itemInventory = {'damage potions' : 999, "health potions" : 999, "agility potions" : 999} 
  
 dodgeInput = ""   
@@ -306,9 +308,20 @@ def startNewGame():
 
     if lengthInput == "s":
         killsNeeded = 5
-        goldNeeded = 50
-        saveLength 
-
+        goldNeeded = 75
+        saveLength = "short"
+    elif lengthInput == "n":
+        killsNeeded = 10
+        goldNeeded = 150
+        saveLength = "normal"
+    elif lengthInput == "l":
+        killsNeeded = 20
+        goldNeeded = 250
+        saveLength = "long"
+    elif lengthInput == "t":
+        killsNeeded = 50
+        goldNeeded = 750
+        saveLength = "Long Haul"
         
 
     print(" ")
@@ -405,6 +418,9 @@ def generateFirstRoom():
     cellTypes[tuple([0,0])] = "empty" 
      
 def generateWorld(layers): 
+    global specialTiles
+    global cellTypes
+
     startNewGame()
 
     for x in range(-layers, layers + 1): 
@@ -416,6 +432,16 @@ def generateWorld(layers):
                 generateRoom([x,y]) 
  
     saveGame(playerpos[0], playerpos[1]) 
+
+    specialTiles["arena"] = [r.randint(1, worldLayers), r.randint(1, worldLayers)]
+    specialTiles["arena"] = [0,0]
+    cellTypes[tuple(specialTiles["arena"])] = "arena"
+
+    specialTiles["escape door"] = [r.randint(-worldLayers, -1), r.randint(-worldLayers, -1)]
+    cellTypes[tuple(specialTiles["escape door"])] = "escape door"
+
+    specialTiles["legendary chest"] = [r.randint(1, worldLayers), r.randint(-worldLayers, -1)]
+    cellTypes[tuple(specialTiles["legendary chest"])] = "legendary chest"
 
 def gameOver():
     cellDoors.clear()
@@ -438,10 +464,22 @@ def gameOver():
     print(f"You had {playerGold} gold")
     print("Creating new world")  
     print("Restart program to play again in the new world")   
+
+def arenaTile():
+    print("Welcome to the arena! Infinite waves of enemies will spawn here to fight.")
+
+    if confirm("Do you want to enter the arena"):
+        while True:
+            doCombat(True)
+
+            if not confirm("Do you want to keep fighting in the arena"):
+                break
  
-def doCombat(): 
+def doCombat(arenaOverride): 
     global playerpos
-    startData = cellEnemies[playerpos[0], playerpos[1]]
+
+    if not arenaOverride: startData = cellEnemies[playerpos[0], playerpos[1]]
+    else: startData = randomEnemy()
 
     currentName = startData[0]
     enemyHealth = startData[2]
@@ -733,7 +771,6 @@ def shopCell():
                 else:
                     continue
 
- 
             else: 
                 print("This costs " + str(damageIncreaseCost) + " gold. You only have "+ str(playerGold)) 
                 print("Would you like to go back to the shop?") 
@@ -893,6 +930,8 @@ def explore(x, y):
         shopCell()
     elif cellTypes[x,y] == "treasure":
         treasureRoom()
+    elif cellTypes[x,y] == "arena":
+        arenaTile()
     
 
     if alive == True:       
@@ -943,7 +982,7 @@ def explore(x, y):
 saveList = loadGame()
 worldSave = loadSavedWorld()
  
-manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
  
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
@@ -963,7 +1002,7 @@ if bool(loadGame) and not manualWorldGenerate:
     moveTimes = saveList[8]
     killCount = saveList[9]
     playerGold = saveList[10]
-    saveName = saveName[11]
+    saveName = saveList[11]
  
 print("Loading save...")
 print(f"Save name: {saveName}")
