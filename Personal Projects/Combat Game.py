@@ -14,7 +14,7 @@ cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [IT
 
 specialTiles = {"arena" : [0,0], "escape door" : [0,0], "legendary chest" : [0,0]}
 
-itemInventory = {'damage potions' : 999, "health potions" : 999, "agility potions" : 999} 
+itemInventory = {'damage potions' : 0, "health potions" : 0, "agility potions" : 0} 
  
 dodgeInput = ""   
  
@@ -180,7 +180,18 @@ def startNewGame():
 
     isComplete = False
 
-    print("Welcome to Pakistan's dungeon!")
+    print("""   
+ _______   _______   _        _________  _______   _________  _______   _        _  _______      ______              _         _______   _______   _______   _       
+(  ____ ) (  ___  ) | \    /\  \__   __/ (  ____ \ \__   __/ (  ___  ) ( (    /|( )(  ____ \    (  __  \  |\     /| ( (    /| (  ____ \ (  ____ \ (  ___  ) ( (    /|
+| (    )| | (   ) | |  \  / /     ) (    | (    \/    ) (    | (   ) | |  \  ( ||/ | (    \/    | (  \  ) | )   ( | |  \  ( | | (    \/ | (    \/ | (   ) | |  \  ( |
+| (____)| | (___) | |  (_/ /      | |    | (_____     | |    | (___) | |   \ | |   | (_____     | |   ) | | |   | | |   \ | | | |       | (__     | |   | | |   \ | |
+|  _____) |  ___  | |   _ (       | |    (_____  )    | |    |  ___  | | (\ \) |   (_____  )    | |   | | | |   | | | (\ \) | | | ____  |  __)    | |   | | | (\ \) |
+| (       | (   ) | |  ( \ \      | |          ) |    | |    | (   ) | | | \   |         ) |    | |   ) | | |   | | | | \   | | | \_  ) | (       | |   | | | | \   |
+| )       | )   ( | |  /  \ \  ___) (___ /\____) |    | |    | )   ( | | )  \  |   /\____) |    | (__/  ) | (___) | | )  \  | | (___) | | (____/\ | (___) | | )  \  |
+|/        |/     \| |_/    \/  \_______/ \_______)    )_(    |/     \| |/    )_)   \_______)    (______/  (_______) |/    )_) (_______) (_______/ (_______) |/    )_)
+                                                                                                                                                         
+                                           """)
+ 
 
     while not isComplete:
         print(" ")
@@ -925,7 +936,7 @@ def explore(x, y):
     global moveTimes
 
     if cellTypes[x,y] == "enemy":
-        doCombat()
+        doCombat(False)
     elif cellTypes[x,y] == "shop":
         shopCell()
     elif cellTypes[x,y] == "treasure":
@@ -982,7 +993,7 @@ def explore(x, y):
 saveList = loadGame()
 worldSave = loadSavedWorld()
  
-manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
  
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
