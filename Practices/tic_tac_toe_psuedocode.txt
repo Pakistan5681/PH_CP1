@@ -1,0 +1,69 @@
+2nd PH Average Grade
+
+draws a 3x3 board made of a list of lists that contains all nine squares
+
+loop run x3 (i)
+    list item i = list of three "_"
+
+loop until user quits program 
+
+    while true
+        Asks for player x input
+        Asks for player y input 
+
+        row = list item y
+
+        if row item x equals "_"
+            row item x = "X"
+            break
+        else
+            tell player the input is invalid
+            loop repeats
+
+    while true
+        randomly generate x and y for bot
+
+        row = list item y
+
+        if row item x equals "_":
+            row item x = "O"
+
+    loop 3 times (x)
+        winCounter = 0
+        loop 3 times (y) 
+            row = list item y
+
+            if row item x is "X"
+                winCounter += 1
+
+        if winCounter equals 3
+            print "You win"
+            break
+
+    loop 3 times (x)
+        winCounter = 0
+        loop 3 times (y) 
+            row = list item y
+
+            if row item x is "O"
+                winCounter += 1
+
+        if winCounter equals 3
+            print "You lose"
+            break
+
+    loop 3 times (x)
+        row equals list item x 
+
+        if number of "x" in row is 3
+            print "You win"
+            break
+
+    loop 3 times (x)
+        row equals list item x 
+
+        if number of "o" in row is 3
+            print "You lose"
+            break
+
+
