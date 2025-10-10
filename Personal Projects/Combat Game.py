@@ -3,7 +3,7 @@ import random as r
  
 enemyHealth = 0 
 playerHealth = 10 
-maxPlayerHealth = 10   
+maxPlayerHealth = 10  
  
 playerpos = [0, 0] 
  
