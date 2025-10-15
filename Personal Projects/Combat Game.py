@@ -424,6 +424,38 @@ def generateFirstRoom():
     doorsList.append("south") 
     doorsList.append("east")   
     doorsList.append("west")  
+
+    doors = cellDoors[tuple([1, 0])] 
+    tempList = [] 
+
+    for i in doors: 
+        tempList.append(i) 
+    if not "east" in tempList: 
+        doorsList.append("east") 
+
+    doors = cellDoors[tuple([-1, 0])] 
+    tempList = [] 
+
+    for i in doors: 
+        tempList.append(i) 
+    if not "west" in tempList: 
+        doorsList.append("west") 
+
+    doors = cellDoors[tuple([0, 1])] 
+    tempList = [] 
+
+    for i in doors: 
+        tempList.append(i) 
+    if not "south" in tempList: 
+        doorsList.append("south") 
+
+    doors = cellDoors[tuple([0, -1])] 
+    tempList = [] 
+
+    for i in doors: 
+        tempList.append(i) 
+    if not "north" in tempList: 
+        doorsList.append("north") 
  
     cellDoors[tuple([0,0])] = doorsList 
     cellTypes[tuple([0,0])] = "empty" 
@@ -445,7 +477,7 @@ def generateWorld(layers):
     saveGame(playerpos[0], playerpos[1]) 
 
     specialTiles["arena"] = [r.randint(1, worldLayers), r.randint(1, worldLayers)]
-    specialTiles["arena"] = [0,0]
+    specialTiles["arena"] = [0,1]
     cellTypes[tuple(specialTiles["arena"])] = "arena"
 
     specialTiles["escape door"] = [r.randint(-worldLayers, -1), r.randint(-worldLayers, -1)]
