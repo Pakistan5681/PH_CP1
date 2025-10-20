@@ -12,6 +12,8 @@ cellTypes = {} # example ([3, 7], 'shop')
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
 cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [ITEM, AMOUNT]
 
+arenaEnemy = {} # this is structured the same a cellEnemies
+
 specialTiles = {"arena" : [0,0], "escape door" : [0,0], "legendary chest" : [0,0]}
 
 itemInventory = {'damage potions' : 0, "health potions" : 0, "agility potions" : 0} 
@@ -74,7 +76,7 @@ def saveGame(playerX, playerY):
         pickle.dump(saveList, file) 
         file.close() 
     with open('worldSave', 'wb') as file: 
-        saveList = [cellDoors, cellTypes, cellEnemies] 
+        saveList = [cellDoors, cellTypes, cellEnemies, cellTreasure] 
         pickle.dump(saveList, file) 
         file.close() 
  
@@ -280,10 +282,13 @@ def startNewGame():
         print("something rather horrendous broke")
 
     isComplete = False
+    print(" ")
 
     while not isComplete:
         print("How long would you like your game to be? Type 's' for short, 'n' for normal, 'l' for long, or 't' for The Long Haul")
         lengthInput = input("Answer here: ")
+
+        print(" ")
 
         if lengthInput == "s":
             print("Are you sure you want to play a short game? Its perfect for a one-session game if you're short on time.")
@@ -470,9 +475,11 @@ def generateWorld(layers):
          
         for y in range(-layers, layers + 1): 
             if x == 0 and y == 0: 
-                generateFirstRoom() 
+                pass
             else:                      
                 generateRoom([x,y]) 
+
+    generateFirstRoom()
  
     saveGame(playerpos[0], playerpos[1]) 
 
@@ -508,7 +515,7 @@ def gameOver():
     print("Creating new world")  
     print("Restart program to play again in the new world")   
 
-def arenaTile():
+def arenaTile(): # ARENA
     print("Welcome to the arena! Infinite waves of enemies will spawn here to fight.")
 
     if confirm("Do you want to enter the arena"):
@@ -1025,14 +1032,15 @@ def explore(x, y):
 saveList = loadGame()
 worldSave = loadSavedWorld()
  
-manualWorldGenerate = True #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
- 
+manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
 else: 
     cellDoors = worldSave[0] 
     cellTypes = worldSave[1] 
     cellEnemies = worldSave[2]
+    cellTreasure = worldSave[3]
  
 if bool(loadGame) and not manualWorldGenerate: 
     playerHealth = saveList[0] 
