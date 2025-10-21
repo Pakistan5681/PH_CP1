@@ -1,5 +1,7 @@
 import pickle   
-import random as r  
+import random as r 
+import graphlib as gl
+
  
 enemyHealth = 0 
 playerHealth = 10 
@@ -12,7 +14,7 @@ cellTypes = {} # example ([3, 7], 'shop')
 cellEnemies = {} # example ([-4, 0], ["Lost Ophan", 1, 7])  enemy data is structured [NAME, STRENGTH, HEALTH]
 cellTreasure = {} # example ([13. -6], ['gold', 32]) treasure data is stored [ITEM, AMOUNT]
 
-arenaEnemy = {} # this is structured the same a cellEnemies
+arenaEnemy = [] # this is structured the same a cellEnemies
 
 specialTiles = {"arena" : [0,0], "escape door" : [0,0], "legendary chest" : [0,0]}
 
@@ -72,7 +74,7 @@ currentName = ""
  
 def saveGame(playerX, playerY): 
     with open('saveData', 'wb') as file: 
-        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY, moveTimes, killCount, playerGold, saveName] 
+        saveList = [playerHealth, maxPlayerHealth, playerStrength, currentName, damageIncreaseCost, healthIncreaseCost, playerX, playerY, moveTimes, killCount, playerGold, saveName, arenaEnemy] 
         pickle.dump(saveList, file) 
         file.close() 
     with open('worldSave', 'wb') as file: 
@@ -183,7 +185,7 @@ def startNewGame():
     isComplete = False
 
     print("""   
- _______   _______   _        _________  _______   _________  _______   _        _  _______      ______              _         _______   _______   _______   _       
+ _______   _______   _         _________  _______  _________  _______   _        _  _______      ______              _         _______   _______   _______   _       
 (  ____ ) (  ___  ) | \    /\  \__   __/ (  ____ \ \__   __/ (  ___  ) ( (    /|( )(  ____ \    (  __  \  |\     /| ( (    /| (  ____ \ (  ____ \ (  ___  ) ( (    /|
 | (    )| | (   ) | |  \  / /     ) (    | (    \/    ) (    | (   ) | |  \  ( ||/ | (    \/    | (  \  ) | )   ( | |  \  ( | | (    \/ | (    \/ | (   ) | |  \  ( |
 | (____)| | (___) | |  (_/ /      | |    | (_____     | |    | (___) | |   \ | |   | (_____     | |   ) | | |   | | |   \ | | | |       | (__     | |   | | |   \ | |
@@ -363,7 +365,7 @@ def generateRoom(roomPos):
             else: 
                 print("ERROR") 
  
-        # 109 - 147: Adds doors for adjacent rooms (If the room to the north has a door leading south, add a door leading north etc.) 
+        # Adds doors for adjacent rooms (If the room to the north has a door leading south, add a door leading north etc.) 
         if tuple([roomPos[0] - 1, roomPos[1]]) in cellDoors: 
             doors = cellDoors[tuple([roomPos[0] - 1, roomPos[1]])] 
             tempList = [] 
@@ -515,10 +517,11 @@ def gameOver():
     print("Creating new world")  
     print("Restart program to play again in the new world")   
 
-def arenaTile(): # ARENA
+def arenaTile(): 
     print("Welcome to the arena! Infinite waves of enemies will spawn here to fight.")
 
     if confirm("Do you want to enter the arena"):
+        print(" ")
         while True:
             doCombat(True)
 
@@ -527,9 +530,15 @@ def arenaTile(): # ARENA
  
 def doCombat(arenaOverride): 
     global playerpos
+    global arenaEnemy
 
     if not arenaOverride: startData = cellEnemies[playerpos[0], playerpos[1]]
-    else: startData = randomEnemy()
+    else: 
+        if not bool(arenaEnemy):
+            startData = randomEnemy()
+            arenaEnemy = startData
+        else:
+            startData = arenaEnemy
 
     currentName = startData[0]
     enemyHealth = startData[2]
@@ -549,7 +558,7 @@ def doCombat(arenaOverride):
     print("It has a strength of " + str(enemyStrength)) 
     print("It has " + str(enemyHealth) + " HP") 
     print(f"You can fight the {currentName} or you can run.")
-    run = input("Type 'r' to run. Put anything else to fight the enemy.").lower().strip()
+    run = input("Type 'r' to run. Put anything else to fight the enemy: ").lower().strip()
     print(" ") 
         
     escaping = False
@@ -653,10 +662,14 @@ def doCombat(arenaOverride):
                 print(f"You killed the {currentName}! You got {enemyGoldDrop} gold!")
                 killCount += 1
                 saveGame(playerpos[0], playerpos[1])
+
+                if arenaOverride:
+                    arenaEnemy = []
  
                 playerGold += enemyGoldDrop 
+                if not arenaOverride:
+                    cellTypes[tuple(playerpos)] = "empty"
 
-                cellTypes[tuple(playerpos)] = "empty"
                 break 
         else: 
             print("You missed!") 
@@ -768,12 +781,12 @@ def shopCell():
         inshop = False 
  
     while inshop: 
-        global playerGold
-        global damageIncreaseCost
-        global playerStrength
-        global healthIncreaseCost
-        global playerHealth
-        global maxPlayerHealth
+        global playerGold 
+        global damageIncreaseCost 
+        global playerStrength 
+        global healthIncreaseCost 
+        global playerHealth 
+        global maxPlayerHealth 
 
         print("----------------------------------------------------------------------------------------") 
         print("Your current gold is " + str(playerGold)) 
@@ -1031,8 +1044,12 @@ def explore(x, y):
      
 saveList = loadGame()
 worldSave = loadSavedWorld()
- 
+    
 manualWorldGenerate = False #manualWorldGenerate is a boolean that tells the code to generate a new world even if a save file already exists when true 
+if confirm("DEBUG: CONFIRM MANUAL WORLD GENERATION"):
+    manualWorldGenerate = True
+else:
+    manualWorldGenerate = False
 
 if not bool(worldSave) or manualWorldGenerate: 
     generateWorld(worldLayers) 
@@ -1054,6 +1071,7 @@ if bool(loadGame) and not manualWorldGenerate:
     killCount = saveList[9]
     playerGold = saveList[10]
     saveName = saveList[11]
+    arenaEnemy = saveList[12]
  
 print("Loading save...")
 print(f"Save name: {saveName}")
