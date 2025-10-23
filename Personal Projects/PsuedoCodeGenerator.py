@@ -70,7 +70,8 @@ def convertToPuesdo(messageList):
             newMessageList.append([])
             currentRow += 1
             newMessageList[currentRow].append("if")
-        elif i == "\n":
+        elif i == """
+""":
             newMessageList.append([])
             currentRow += 1
         elif i == "i":
@@ -89,6 +90,10 @@ def convertToPuesdo(messageList):
             newMessageList[currentRow].append("is greater than or equal to")
         elif i == "<=" or i == "=<":
             newMessageList[currentRow].append("is less than or equal to")
+        elif i == "<":
+            newMessageList[currentRow].append("is less than")
+        elif i == ">":
+            newMessageList[currentRow].append("is greater than")
         else:
             newWord = ""
 
