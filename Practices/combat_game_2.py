@@ -1,6 +1,9 @@
 import random as r
 
 stats = []
+monsterStats = []
+damgeDiceTypes = ["D4", "D8"]
+enemyNames = ["Sludge", "Lost Orphan", "Living Spike", "Jeff"]
 
 def diceRoll(diceType, modifier, rollerType):
     output = 0
@@ -14,6 +17,13 @@ def diceRoll(diceType, modifier, rollerType):
 
     print(f"{rollerType} rolled a {output}. With the modifier of +{modifier}, {rollerType} got a {output + modifier}")
     return output + modifier
+
+def createNewMonster(diceTypes, enemyNames):
+    health = r.randint(15, 35)
+    defense = r.randint(12, 16)
+    attack = ["D20", r.randint(0, 7)]
+    damage = [r.choice(diceTypes), r.randint(0, 4)]
+    name = r.choice(enemyNames)
 
 
 def startGame():
@@ -38,8 +48,6 @@ def startGame():
     elif playerClass == "mage":
         outputStats = [20, 8, ["D20", 5], ["D8", 4]]
 
-
-
     print(f"You are a {playerClass}.")
     print(f"Your HP is {outputStats[0]}.")
     print(f"Your defense is {outputStats[1]}.")
@@ -50,7 +58,17 @@ def startGame():
     return outputStats
 
 def playerTurn(stats):
-    
+    print("Would like to 1. Attack, 2. Wild Attack, 3. Use health potion, or 4. Attempt to flee")
+    playerInput = ""
+
+    while playerInput != "1" and playerInput != "2" and playerInput != "3" and playerInput != "4":
+        playerInput = input("Type '1', '2', '3', or '4': ")
+
+    print(" ")
+
+    if playerInput == "1":
+        print("You attack")
+        attckRoll = diceRoll(stats[2][0], stats[2][1], "you")
 
 stats = startGame()
 
