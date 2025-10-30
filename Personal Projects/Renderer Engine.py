@@ -30,6 +30,9 @@ def drawFace(face, screen):
 
     py.draw.polygon(screen, face.color, [vert1, vert2, vert3])
 
+def rotateVertex(vertex, centerPoint):
+    relativeVertex = [vertex.x - centerPoint.x, vertex.y - centerPoint.y, vertex.z - centerPoint.z]
+
 vert1 = Vertex(0, 0, 0)
 vert2 = Vertex(2, 0, 0)
 vert3 = Vertex(1, 2, 0)
