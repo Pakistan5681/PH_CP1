@@ -1,4 +1,5 @@
 import pygame as py
+import math as m
 
 py.init()
 screen = py.display.set_mode((1280, 720))
@@ -30,8 +31,16 @@ def drawFace(face, screen):
 
     py.draw.polygon(screen, face.color, [vert1, vert2, vert3])
 
-def rotateVertex(vertex, centerPoint):
+def rotateVertex(vertex, centerPoint, rotationType, angle):
     relativeVertex = [vertex.x - centerPoint.x, vertex.y - centerPoint.y, vertex.z - centerPoint.z]
+    newVertexLocal = Vertex(0, 0, 0)
+
+    if rotationType == "x":
+        newVertexLocal.x = relativeVertex[0]
+        newVertexLocal.y = (relativeVertex[1] * m.cos(angle)) - (relativeVertex[2] * m.cos(angle))
+        newVertexLocal.z = (relativeVertex[1] * m.sin(angle)) + (relativeVertex[2] * m.sin(angle))
+
+    return newVertexLocal
 
 vert1 = Vertex(0, 0, 0)
 vert2 = Vertex(2, 0, 0)
