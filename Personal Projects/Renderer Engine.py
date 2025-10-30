@@ -7,6 +7,9 @@ running = True
 
 red = (255, 0, 0)
 
+cameraPos = [0, 0, -10]
+cameraRotation = [0, 0, 0]
+
 class Vertex:
     def __init__(self, x, y, z):
         self.x = x
@@ -25,7 +28,7 @@ def drawFace(face, screen):
     vert2 = [face.vertTwo.x, face.vertTwo.y]
     vert3 = [face.vertThree.x, face.vertThree.y]
 
-    py.draw.polygon(screen, face.color)
+    py.draw.polygon(screen, face.color, [vert1, vert2, vert3])
 
 vert1 = Vertex(0, 0, 0)
 vert2 = Vertex(2, 0, 0)
@@ -33,12 +36,10 @@ vert3 = Vertex(1, 2, 0)
 
 face =  Face(vert1, vert2, vert3, red)
 
-print(face.vertTwo)
-
-while True:
+while running:
     screen.fill("purple")
 
-
+    drawFace(face, screen)
 
     py.display.flip()
 
