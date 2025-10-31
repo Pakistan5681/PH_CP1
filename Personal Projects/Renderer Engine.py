@@ -11,6 +11,9 @@ red = (255, 0, 0)
 cameraPos = [0, 0, -10]
 cameraRotation = [0, 0, 0]
 
+defaultRenderDistance = 10 # The distance at which an object will be rendered at set size
+distanceShrink = 2
+
 class Vertex:
     def __init__(self, x, y, z):
         self.x = x
@@ -24,10 +27,20 @@ class Face:
         self.vertThree = vertThree
         self.color = color
 
-def drawFace(face, screen):
-    vert1 = [face.vertOne.x, face.vertOne.y]
-    vert2 = [face.vertTwo.x, face.vertTwo.y]
-    vert3 = [face.vertThree.x, face.vertThree.y]
+def project(vertex, cameraPos, screen):
+    distance = vertex.z - cameraPos[2]
+    if vertex.z == 0: vertex.z = 1  # prevent divide-by-zero
+
+    x = (vertex.x * distance) / vertex.z
+    y = (vertex.y * distance) / vertex.z
+
+    print(f"x: {x}, y: {y}")
+    return [x, y]
+
+def drawFace(face, screen, cameraPosition, pyScreen):
+    vert1 = project(face.vertOne, cameraPosition, pyScreen)
+    vert2 = project(face.vertTwo, cameraPosition, pyScreen)
+    vert3 = project(face.vertThree, cameraPosition, pyScreen)
 
     py.draw.polygon(screen, face.color, [vert1, vert2, vert3])
 
@@ -55,7 +68,6 @@ def rotateVertex(vertex, centerPoint, rotationType, angle):
     newVertexLocal[1] += centerPoint.y
     newVertexLocal[2] += centerPoint.z
 
-    print(newVertexLocal)
     return Vertex(newVertexLocal[0], newVertexLocal[1], newVertexLocal[2])
 
 def rotateFace(face, rotationType, centerPoint, angle):
@@ -65,19 +77,19 @@ def rotateFace(face, rotationType, centerPoint, angle):
 
     return face
 
-vert1 = Vertex(0, 0, 0)
-vert2 = Vertex(200, 0, 0)
-vert3 = Vertex(100, 200, 0)
+vert1 = Vertex(500, 500, 0)
+vert2 = Vertex(700, 500, 0)
+vert3 = Vertex(600, 700, 0)
 
-face =  Face(vert1, vert2, vert3, red)
+face = Face(vert1, vert2, vert3, red)
 
 while running:
     screen.fill("purple")
     clock.tick(60)
 
-    drawFace(face, screen)
-    face = rotateFace(face, "z", Vertex(100, 200, 0), 1)
-    face = rotateFace(face, "x", Vertex(100, 200, 0), 1)
+    face.vertOne.x += 1
+
+    drawFace(face, screen, cameraPos, screen)
     py.display.flip()
 
 
