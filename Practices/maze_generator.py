@@ -1,55 +1,79 @@
 import turtle as t
 from random import randint, choice
 
-gridSize = 6
-gridSpaces = [] # open/closed list is layed out top bottom left right
-spaceSize = 50
+gridSize = 10
+gridRows = []
+gridCollumns = []
+spaceSize = 20
 
 t.speed(0)
 
-def randomList():
+def randomList(gridSize):
     outList = []
-    options = ["open", "closed", "open"]
+    options = ["open", "closed"]
 
-    while outList == ["closed", "closed", "closed", "closed"] or outList == []:
-        outList = []
-
-        for i in range(4):
-            outList.append(choice(options))
+    for i in range(gridSize):
+        outList.append(choice(options))
 
     return outList
 
 for x in range(gridSize):
-    for y in range(gridSize):
-        gridSpaces.append([[x * 50, y * 50], randomList()])
+    gridRows.append(randomList(gridSize))
+    gridCollumns.append(randomList(gridSize))
 
-def drawLine(startPos, distance, rotation):
-    t.teleport(startPos[0], startPos[1])
-    t.left(rotation)
+def drawLineHorizontal(x, y, distance):
+    t.teleport(x, y)
     t.forward(distance)
-    t.right(rotation)
 
-print(gridSpaces)
+def drawLineVertical(x, y, distance):
+    t.teleport(x, y)
+    t.left(90)
+    t.forward(distance)
+    t.right(90)
 
-def drawMaze(gridSpaces, spaceSize, gridSize):
-    drawLine([-(spaceSize / 2), -(spaceSize / 2)], spaceSize * gridSize, 0)
-    drawLine([-(spaceSize / 2), (spaceSize * gridSize) - (spaceSize / 2)], spaceSize * gridSize, 0)
-    drawLine([-(spaceSize / 2), -(spaceSize / 2)], (spaceSize * (gridSize - 1)), 90)
-    drawLine([-(spaceSize / 2), -(spaceSize / 2)], (spaceSize * (gridSize - 1)), 90)
+def drawLineVerticalEdgeCase(x, y, distance):
+    t.teleport(x, y)
+    t.left(270)
+    t.forward(distance)
+    t.right(270)
 
-    for i in gridSpaces:
-        x = i[0][0]
-        y = i[0][1]
+def drawMaze(rows, collumns, spaceSize, gridSize):
+    drawLineHorizontal(0, 0, spaceSize * gridSize)
+    drawLineHorizontal(0, (spaceSize * gridSize), spaceSize * gridSize)
+    drawLineVertical(0, 0, (spaceSize * (gridSize - 1)))
+    drawLineVerticalEdgeCase((spaceSize * gridSize), spaceSize * gridSize, (spaceSize * (gridSize - 1)))
 
-        if i[1][0] == "closed":
-            drawLine([x - (spaceSize / 2), y + (spaceSize / 2)], spaceSize, 0)
-        if i[1][1] == "closed":
-            drawLine([x - (spaceSize / 2), y - (spaceSize / 2)], spaceSize, 0)
-        if i[1][2] == "closed":
-            drawLine([x - (spaceSize / 2), y + (spaceSize / 2)], spaceSize, 270)
-        if i[1][2] == "closed":
-            drawLine([x + (spaceSize / 2), y + (spaceSize / 2)], spaceSize, 270)
+    for i in range(len(rows)):
+        for j in range(len(rows[i])):
+            if rows[i][j] == "open":
+                t.penup()
+            else:
+                t.pendown()
 
-drawMaze(gridSpaces, spaceSize, gridSize)
+            drawLineHorizontal(j * spaceSize, i * spaceSize, spaceSize)
+
+    for i in range(len(collumns)):
+        for j in range(len(collumns[i])):
+            if collumns[i][j] == "open":
+                t.penup()
+            else:
+                t.pendown()
+
+            drawLineVertical(j * spaceSize, i * spaceSize, spaceSize)
+
+def checkSolvable(rows, collumns):
+    mazeCheckers = [[t.Turtle(), [0, 0]]]
+
+    for i in mazeCheckers:
+        i[0].shape("circle")
+        i[0].teleport(i[1][0], i[1][1])
+
+        if rows[i[1][0]][i[1][1]] == "open": # checks if no line above
+            pass 
+            
+
+
+
+drawMaze(gridRows, gridCollumns, spaceSize, gridSize)
 
 t.mainloop()
