@@ -75,35 +75,34 @@ def checkSolvable(rows, collumns, size, gridCount):
                 solvable = True
                 print("solved")
                 return True
-                
-            i[0].speed(10)
-            if (i[1][1] + 1) * size < size * gridCount:
-                if rows[i[1][1] + 1][i[1][0]] == "open" and not [i[1][0], i[1][1] + 1] in visitedSpaces: # checks if no line above
+
+            if (i[1] + 1) * size < size * gridCount:
+                if rows[i[0][1] + 1][i[0][0]] == "open" and not [i[0][0], i[0][1] + 1] in visitedSpaces: # checks if no line above
                     print("open") 
-                    mazeCheckers.append([i[1][0], i[1][1] + 1])
-                    visitedSpaces.append([i[1][0], i[1][1]])
+                    mazeCheckers.append([i[0][0], i[0][1] + 1])
+                    visitedSpaces.append([i[0][0], i[0][1]])
                 else:
                     print("closed")
 
-            if rows[i[1][1] - 1][i[1][0]] == "open" and (i[1][1] - 1) * size > 0 and not [i[1][0], i[1][1] - 1] in visitedSpaces: # checks if no line below
+            if rows[i[0][1] - 1][i[0][0]] == "open" and (i[0][1] - 1) * size > 0 and not [i[0][0], i[0][1] - 1] in visitedSpaces: # checks if no line below
                 print("open") 
-                mazeCheckers.append([i[1][0], i[1][1] - 1])
-                visitedSpaces.append([i[1][0], i[1][1]])
+                mazeCheckers.append([i[0][0], i[0][1] - 1])
+                visitedSpaces.append([i[0][0], i[0][1]])
             else:
                 print("closed")
 
-            if (i[1][0] + 1) * size < size * gridCount:
-                if collumns[i[1][0] + 1][i[1][1]] == "open" and not [i[1][0] + 1, i[1][1]] in visitedSpaces: # checks if no line to right
+            if (i[0][0] + 1) * size < size * gridCount:
+                if collumns[i[0][0] + 1][i[0][1]] == "open" and not [i[0][0] + 1, i[0][1]] in visitedSpaces: # checks if no line to right
                     print("open") 
-                    mazeCheckers.append([i[1][0] + 1, i[1][1]])
-                    visitedSpaces.append([i[1][0], i[1][1]])
+                    mazeCheckers.append([i[0][0] + 1, i[0][1]])
+                    visitedSpaces.append([i[0][0], i[0][1]])
                 else:
                     print("closed")
 
-            if collumns[i[1][0]][i[1][1]] == "open" and (i[1][0] - 1) * size > 0 and not [i[1][0] - 1, i[1][1]] in visitedSpaces: # checks if no line to left
+            if collumns[i[0][0]][i[0][1]] == "open" and (i[0][0] - 1) * size > 0 and not [i[0][0] - 1, i[0][1]] in visitedSpaces: # checks if no line to left
                 print("open") 
-                mazeCheckers.append([i[1][0] - 1, i[1][1]])
-                visitedSpaces.append([i[1][0], i[1][1]])
+                mazeCheckers.append([i[0][0] - 1, i[0][1]])
+                visitedSpaces.append([i[0][0], i[0][1]])
             else:
                 print("closed")
 
