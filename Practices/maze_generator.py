@@ -1,6 +1,5 @@
 import turtle as t
-from random import randint, choice
-from time import sleep
+from random import choice
 
 gridSize = 5
 gridRows = []
@@ -64,8 +63,6 @@ def drawMaze(rows, collumns, spaceSize, gridSize):
 
 def checkSolvable(rows, collumns, size, gridCount):
     mazeCheckers = [[0, 0]]
-    indent = size / 2
-
     visitedSpaces = []
 
     solvable = False
@@ -73,15 +70,11 @@ def checkSolvable(rows, collumns, size, gridCount):
     while bool(mazeCheckers):
         print(f"length: {len(mazeCheckers)}")
         for i in mazeCheckers:
-            i[0].shape("circle")
-            i[0].shapesize(0.5, 0.5, 0)
 
             if i[1] == [gridSize - 1, gridSize - 1]:
                 solvable = True
                 print("solved")
                 return True
-
-            i[0].teleport((i[1][0] * size) + indent, (i[1][1] * size) + indent)
                 
             i[0].speed(10)
             if (i[1][1] + 1) * size < size * gridCount:
@@ -117,10 +110,23 @@ def checkSolvable(rows, collumns, size, gridCount):
             mazeCheckers.remove(i)  
 
     return solvable
+
+gridSizeInput = input("How big do you want the grid to be (try to stay under ten) ")
+
+while not gridSizeInput.isnumeric():
+    gridSizeInput = input("How big do you want the grid to be (try to stay under ten) ")
+
+gridSize = int(gridSizeInput)
+
+mazeSize = "" 
+
+while not mazeSize.isnumeric():
+    mazeSize = input("How big do you want the enitire maze to be? ")
+
+mazeSize = int(mazeSize)
+
+spaceSize = mazeSize / gridSize
             
-
-drawMaze(gridRows, gridCollumns, spaceSize, gridSize)
-
 while checkSolvable(gridRows, gridCollumns, spaceSize, gridSize) == False:
     t.clear()
     gridRows = []
@@ -128,6 +134,7 @@ while checkSolvable(gridRows, gridCollumns, spaceSize, gridSize) == False:
     for x in range(gridSize):      
         gridRows.append(randomList(gridSize))
         gridCollumns.append(randomList(gridSize))
-    drawMaze(gridRows, gridCollumns, spaceSize, gridSize)
+    
+drawMaze(gridRows, gridCollumns, spaceSize, gridSize)
 
 t.mainloop()
