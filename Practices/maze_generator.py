@@ -1,5 +1,6 @@
 import turtle as t
 from random import randint, choice
+from time import sleep
 
 gridSize = 5
 gridRows = []
@@ -59,68 +60,74 @@ def drawMaze(rows, collumns, spaceSize, gridSize):
             else:
                 t.pendown()
 
-            drawLineVertical(j * spaceSize, i * spaceSize, spaceSize)
+            drawLineVertical(i * spaceSize, j * spaceSize, spaceSize)
 
 def checkSolvable(rows, collumns, size, gridCount):
-    mazeCheckers = [[t.Turtle(), [1, 1]]]
+    mazeCheckers = [[0, 0]]
     indent = size / 2
+
+    visitedSpaces = []
 
     solvable = False
 
     while bool(mazeCheckers):
+        print(f"length: {len(mazeCheckers)}")
         for i in mazeCheckers:
             i[0].shape("circle")
             i[0].shapesize(0.5, 0.5, 0)
 
-            if i[1] == [gridSize + 1, gridSize + 1]:
+            if i[1] == [gridSize - 1, gridSize - 1]:
                 solvable = True
-                break
+                print("solved")
+                return True
 
-            if(i[1][0] != 1 and i[1][1] != 1):
-                i[0].teleport((i[1][0] * size) + indent, i[1][1] * size)
-            else:
-                i[0].teleport(i[1][0] * indent, i[1][1] * indent)
+            i[0].teleport((i[1][0] * size) + indent, (i[1][1] * size) + indent)
                 
             i[0].speed(10)
+            if (i[1][1] + 1) * size < size * gridCount:
+                if rows[i[1][1] + 1][i[1][0]] == "open" and not [i[1][0], i[1][1] + 1] in visitedSpaces: # checks if no line above
+                    print("open") 
+                    mazeCheckers.append([i[1][0], i[1][1] + 1])
+                    visitedSpaces.append([i[1][0], i[1][1]])
+                else:
+                    print("closed")
 
-            if rows[i[1][0]][i[1][1] - 1] == "open" and (i[1][1] + 1) * size < size * gridCount: # checks if no line above
+            if rows[i[1][1] - 1][i[1][0]] == "open" and (i[1][1] - 1) * size > 0 and not [i[1][0], i[1][1] - 1] in visitedSpaces: # checks if no line below
                 print("open") 
-                mazeCheckers.append([t.Turtle(), [i[1][0], i[1][1] + 1]])
+                mazeCheckers.append([i[1][0], i[1][1] - 1])
+                visitedSpaces.append([i[1][0], i[1][1]])
             else:
                 print("closed")
 
-            if rows[i[1][0] - 1][i[1][1] - 1] == "open" and (i[1][1] - 1) * size > 0: # checks if no line below
+            if (i[1][0] + 1) * size < size * gridCount:
+                if collumns[i[1][0] + 1][i[1][1]] == "open" and not [i[1][0] + 1, i[1][1]] in visitedSpaces: # checks if no line to right
+                    print("open") 
+                    mazeCheckers.append([i[1][0] + 1, i[1][1]])
+                    visitedSpaces.append([i[1][0], i[1][1]])
+                else:
+                    print("closed")
+
+            if collumns[i[1][0]][i[1][1]] == "open" and (i[1][0] - 1) * size > 0 and not [i[1][0] - 1, i[1][1]] in visitedSpaces: # checks if no line to left
                 print("open") 
-                mazeCheckers.append([t.Turtle(), [i[1][0], i[1][1] - 1]])
+                mazeCheckers.append([i[1][0] - 1, i[1][1]])
+                visitedSpaces.append([i[1][0], i[1][1]])
             else:
                 print("closed")
 
-            if collumns[i[1][1]][i[1][0] - 1] == "open" and (i[1][0] + 1) * size < size * gridCount: # checks if no line to right
-                print("open") 
-                mazeCheckers.append([t.Turtle(), [i[1][0] + 1, i[1][1]]])
-            else:
-                print("closed")
+            mazeCheckers.remove(i)  
 
-            if collumns[i[1][1] - 1][i[1][0] - 1] == "open" and (i[1][0] - 1) * size > 0: # checks if no line to left
-                print("open") 
-                mazeCheckers.append([t.Turtle(), [i[1][0] - 1, i[1][1]]])
-            else:
-                print("closed")
-
-            i[0].ht()
-            mazeCheckers.remove(i)
-            
-
-        for i in mazeCheckers:
-            i[0].ht()
-
-        return solvable
+    return solvable
             
 
 drawMaze(gridRows, gridCollumns, spaceSize, gridSize)
 
 while checkSolvable(gridRows, gridCollumns, spaceSize, gridSize) == False:
     t.clear()
+    gridRows = []
+    gridCollumns = []
+    for x in range(gridSize):      
+        gridRows.append(randomList(gridSize))
+        gridCollumns.append(randomList(gridSize))
     drawMaze(gridRows, gridCollumns, spaceSize, gridSize)
 
 t.mainloop()
