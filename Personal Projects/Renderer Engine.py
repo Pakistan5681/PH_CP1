@@ -21,8 +21,8 @@ pMatrix = np.array([
 
 red = (255, 0, 0)
 
-cameraPos = [0, 0, -10]
-cameraRotation = [0, 0, 0]
+cameraPos = [0, 0, 0]
+cameraRotation = [0, 0, 10]
 fov = 30
 
 defaultRenderDistance = 10 # The distance at which an object will be rendered at set size
@@ -48,6 +48,8 @@ class Vertex:
         y_screen = (1 - ndc[1]) * 0.5 * height
         z_screen = ndc[2]
 
+        print(np.array([x_screen, y_screen]))
+
         return np.array([x_screen, y_screen])
 
 class Face:
@@ -56,6 +58,19 @@ class Face:
         self.vertTwo = vertTwo
         self.vertThree = vertThree
         self.color = color
+
+class Shape:
+    def __init__(self, faces):
+        self.faces = faces
+
+    def move(self, moveVertex):
+        for i in self.faces:
+            moveFace(i, moveVertex)
+    
+    def draw(self):
+        for i in self.faces:
+
+
 
 def drawNoProjection(vertex):
     x = vertex.x
@@ -69,6 +84,18 @@ def drawFace(face, screen, projectMatrix):
     vert3 = face.vertThree.project(projectMatrix, screen.get_width(), screen.get_height())
 
     py.draw.polygon(screen, face.color, [vert1, vert2, vert3])
+
+def moveVertex(vertex, movementVertex):
+    vertex.x += movementVertex.x
+    vertex.y += movementVertex.y
+    vertex.z += movementVertex.z
+
+    return(Vertex(vertex.x, vertex.y, vertex.z))
+
+def moveFace(face, movementVertex):
+    face.vertOne = moveVertex(face.vertOne, movementVertex)
+    face.vertTwo = moveVertex(face.vertTwo, movementVertex)
+    face.vertThree = moveVertex(face.vertThree, movementVertex)
 
 def rotateVertex(vertex, centerPoint, rotationType, angle):
     angle = m.radians(angle)
@@ -103,9 +130,10 @@ def rotateFace(face, rotationType, centerPoint, angle):
 
     return face
 
-vert1 = Vertex(500, 500, 100)
-vert2 = Vertex(700, 500, 100)
-vert3 = Vertex(600, 700, 100)
+vert1 = Vertex(0, 0, -50)
+vert2 = Vertex(10, -10, -40)
+vert3 = Vertex(-10, -10, -40)
+vert4 = Vertex(0, -10, -60)
 
 face = Face(vert1, vert2, vert3, red)
 
@@ -116,6 +144,8 @@ while running:
     for event in py.event.get():
         if event.type == py.QUIT:
             running = False
+
+    moveFace(face, Vertex(0, 0, -5))
 
     drawFace(face, screen, pMatrix)
     py.display.flip()
