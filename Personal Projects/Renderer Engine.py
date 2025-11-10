@@ -20,9 +20,16 @@ pMatrix = np.array([
 ])
 
 red = (255, 0, 0)
+blue = (0, 0, 255)
+green = (0, 255, 0)
+yellow = (255, 255, 0)
+black = (0, 0, 0)
+white = (255, 255, 255)
+orange  = (255, 102, 0)
+purple = (255, 0, 255)
 
 cameraPos = [0, 0, 0]
-cameraRotation = [0, 0, 10]
+cameraRotation = [0, 0, 0]
 fov = 30
 
 defaultRenderDistance = 10 # The distance at which an object will be rendered at set size
@@ -66,11 +73,24 @@ class Shape:
     def move(self, moveVertex):
         for i in self.faces:
             moveFace(i, moveVertex)
-    
-    def draw(self):
+
+    def rotate(self, rotationType, centerVertex, angle):
         for i in self.faces:
+            rotateFace(i, rotationType, centerVertex, angle)
+    
+    def draw(self, screen, projectMatrix):
+        zPositions = []
+        zConnections = {}
+        for i in self.faces:
+            zAverage = (i.vertOne.z + i.vertTwo.z + i.vertThree.z) / 3
+            zConnections[zAverage] = i
+            zPositions.append(zAverage)
 
+        zPositions.sort()
 
+        for i in zPositions:
+            drawFace(zConnections[zPositions], screen, projectMatrix)
+            
 
 def drawNoProjection(vertex):
     x = vertex.x
@@ -135,20 +155,22 @@ vert2 = Vertex(10, -10, -40)
 vert3 = Vertex(-10, -10, -40)
 vert4 = Vertex(0, -10, -60)
 
-face = Face(vert1, vert2, vert3, red)
+face1 = Face(vert1, vert2, vert3, red)
+face2 = Face(vert1, vert2, vert4, blue)
+face3 = Face(vert1, vert3, vert4, green)
+face4 = Face(vert2, vert3, vert4, yellow)
+
+pyramid = Shape([face1, face2, face3, face4])
 
 while running:
-    screen.fill("purple")
+    screen.fill("black")
     clock.tick(60)
 
     for event in py.event.get():
         if event.type == py.QUIT:
             running = False
 
-    moveFace(face, Vertex(0, 0, -5))
+    pyramid.rotate("x", Vertex(0, -5, -50), 1)
+    pyramid.draw(screen, pMatrix)
 
-    drawFace(face, screen, pMatrix)
     py.display.flip()
-
-
-
