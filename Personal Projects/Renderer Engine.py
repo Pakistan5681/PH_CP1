@@ -40,17 +40,13 @@ class Vertex:
         self.x, self.y, self.z = x, y, z
 
     def to_array(self):
-        # convert to homogeneous coordinates (x, y, z, 1)
         return np.array([self.x, self.y, self.z, 1.0])
 
     def project(self, projection_matrix, width, height):
-        # multiply vertex by projection matrix
         clip = projection_matrix @ self.to_array()
 
-        # perspective divide (normalize)
         ndc = clip[:3] / clip[3]
 
-        # map to screen coordinates
         x_screen = (ndc[0] + 1) * 0.5 * width
         y_screen = (1 - ndc[1]) * 0.5 * height
         z_screen = ndc[2]
@@ -65,6 +61,39 @@ class Face:
         self.vertTwo = vertTwo
         self.vertThree = vertThree
         self.color = color
+
+    def draw(self, projectMatrix, screen):
+        pointOne = self.vertOne.project(projectMatrix, screen.get_width(), screen.get_height())
+        pointTwo = self.vertTwo.project(projectMatrix, screen.get_width(), screen.get_height())
+        pointThree = self.vertThree.project(projectMatrix, screen.get_width(), screen.get_height())
+
+        a = (pointOne[0], pointOne[1])
+        b = (pointTwo[0], pointTwo[1])
+        c = (pointThree[0], pointThree[1])
+
+        pixels = py.surfarray.pixels3d(screen)
+
+        min_x = int(max(min(a[0], b[0], c[0]), 0))
+        max_x = int(min(max(a[0], b[0], c[0]), screen.get_width()))
+        min_y = int(max(min(a[1], b[1], c[1]), 0))
+        max_y = int(min(max(a[1], b[1], c[1]), screen.get_height()))
+
+        x, y = np.meshgrid(np.arange(min_x, max_x), np.arange(min_y, max_y))
+
+        x1, y1 = a
+        x2, y2 = b
+        x3, y3 = c
+
+        den = ( (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3) )
+        α = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / den
+        β = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / den
+        γ = 1 - α - β
+
+        mask = (α >= 0) & (β >= 0) & (γ >= 0)
+
+        pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
+
+        del pixels
 
 class Shape:
     def __init__(self, faces):
@@ -89,7 +118,7 @@ class Shape:
         zPositions.sort()
 
         for i in zPositions:
-            drawFace(zConnections[zPositions], screen, projectMatrix)
+            zConnections[i].draw(projectMatrix, screen)
             
 
 def drawNoProjection(vertex):
@@ -170,6 +199,7 @@ while running:
         if event.type == py.QUIT:
             running = False
 
+    pyramid.rotate("y", Vertex(0, -5, -50), 1)
     pyramid.rotate("x", Vertex(0, -5, -50), 1)
     pyramid.draw(screen, pMatrix)
 
