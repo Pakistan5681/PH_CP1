@@ -1,6 +1,7 @@
 import pygame as py
 import math as m
 import numpy as np
+from random import randint, choice
 
 py.init()
 screen = py.display.set_mode((1280 * 1.5, 720 * 1.5))
@@ -28,12 +29,42 @@ white = (255, 255, 255)
 orange  = (255, 102, 0)
 purple = (255, 0, 255)
 
+def randomColor():
+    r = randint(0, 255)
+    g = randint(0, 255)
+    b = randint(0, 255)
+
+    return (r, g, b)
+
 cameraPos = [0, 0, 0]
 cameraRotation = [0, 0, 0]
 fov = 30
 
 defaultRenderDistance = 10 # The distance at which an object will be rendered at set size
 distanceShrink = 2
+
+color_buffer = np.zeros((screen.get_height(), screen.get_width(), 4), dtype=np.uint8)  # RGBA
+layer_buffer = np.full((screen.get_height(), screen.get_width()), np.inf, dtype=np.float32)
+xv, yv = np.meshgrid(np.arange(screen.get_width()), np.arange(screen.get_height()))
+
+squares = [[100, 100, 1, randomColor()], [200, 200, 2, randomColor()]]
+
+def renderPixelTest(squares): # this is essentially a lab for me to experiment with pixel rendering
+    pixels = py.surfarray.pixels3d(screen)
+    squares = sorted(squares, key=lambda s: s[2], reverse=True) #sorts squres by its third value
+
+    for i in squares:
+        pixels[i[0] - 100:i[0] + 100, i[1] - 100:i[1] + 100] = i[3]
+
+        i[0] += randint(-5, 5)
+        i[1] += randint(-5, 5)
+
+        i[0] = min(i[0], screen.get_width() - 100)
+        i[1] = min(i[1], screen.get_height() - 100)
+        i[0] = max(i[0], 100)
+        i[1] = max(i[1], 100)
+
+    del pixels
 
 class Vertex:
     def __init__(self, x, y, z):
@@ -50,8 +81,6 @@ class Vertex:
         x_screen = (ndc[0] + 1) * 0.5 * width
         y_screen = (1 - ndc[1]) * 0.5 * height
         z_screen = ndc[2]
-
-        print(np.array([x_screen, y_screen]))
 
         return np.array([x_screen, y_screen])
 
@@ -90,6 +119,7 @@ class Face:
         γ = 1 - α - β
 
         mask = (α >= 0) & (β >= 0) & (γ >= 0)
+        print(f"pixels: {pixels[min_x:max_x, min_y:max_y][mask.T]}")
 
         pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
 
@@ -192,15 +222,13 @@ face4 = Face(vert2, vert3, vert4, yellow)
 pyramid = Shape([face1, face2, face3, face4])
 
 while running:
-    screen.fill("black")
     clock.tick(60)
+    screen.fill("black")
 
     for event in py.event.get():
         if event.type == py.QUIT:
             running = False
 
-    pyramid.rotate("y", Vertex(0, -5, -50), 1)
-    pyramid.rotate("x", Vertex(0, -5, -50), 1)
-    pyramid.draw(screen, pMatrix)
+    renderPixelTest(squares)
 
     py.display.flip()
