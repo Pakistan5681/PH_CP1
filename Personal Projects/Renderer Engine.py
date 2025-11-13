@@ -47,7 +47,7 @@ color_buffer = np.zeros((screen.get_height(), screen.get_width(), 4), dtype=np.u
 layer_buffer = np.full((screen.get_height(), screen.get_width()), np.inf, dtype=np.float32)
 xv, yv = np.meshgrid(np.arange(screen.get_width()), np.arange(screen.get_height()))
 
-squares = [[100, 100, 1, randomColor()], [200, 200, 2, randomColor()]]
+squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
 def renderPixelTest(squares): # this is essentially a lab for me to experiment with pixel rendering
     pixels = py.surfarray.pixels3d(screen)
@@ -119,11 +119,11 @@ class Face:
         γ = 1 - α - β
 
         mask = (α >= 0) & (β >= 0) & (γ >= 0)
-        print(f"pixels: {pixels[min_x:max_x, min_y:max_y][mask.T]}")
 
-        pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
+        color_buffer[min_x:max_x, min_y:max_y][mask.T] = self.color
+        layer_buffer[min_x:max_x, min_y:max_y][mask.T] = 
 
-        del pixels
+        return pixels[min_x:max_x, min_y:max_y][mask.T]        
 
 class Shape:
     def __init__(self, faces):
@@ -140,12 +140,10 @@ class Shape:
     def draw(self, screen, projectMatrix):
         zPositions = []
         zConnections = {}
-        for i in self.faces:
-            zAverage = (i.vertOne.z + i.vertTwo.z + i.vertThree.z) / 3
-            zConnections[zAverage] = i
-            zPositions.append(zAverage)
+        allPixels = []
 
-        zPositions.sort()
+        for i in self.faces:
+            allPixels.extend[i.draw(projectMatrix, screen)]
 
         for i in zPositions:
             zConnections[i].draw(projectMatrix, screen)
@@ -163,6 +161,27 @@ def drawFace(face, screen, projectMatrix):
     vert3 = face.vertThree.project(projectMatrix, screen.get_width(), screen.get_height())
 
     py.draw.polygon(screen, face.color, [vert1, vert2, vert3])
+
+def barycentric_weights(px, py, A, B, C):
+    (x1, y1), (x2, y2), (x3, y3) = A, B, C
+
+    denom = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3)
+
+    w1 = ((y2 - y3)*(px - x3) + (x3 - x2)*(py - y3)) / denom
+    w2 = ((y3 - y1)*(px - x3) + (x1 - x3)*(py - y3)) / denom
+    w3 = 1 - w1 - w2
+
+    return w1, w2, w3
+
+
+def interpolate_xyz(px, py, A, B, C, XYZ1, XYZ2, XYZ3):
+    w1, w2, w3 = barycentric_weights(px, py, A, B, C)
+
+    X = w1*XYZ1[0] + w2*XYZ2[0] + w3*XYZ3[0]
+    Y = w1*XYZ1[1] + w2*XYZ2[1] + w3*XYZ3[1]
+    Z = w1*XYZ1[2] + w2*XYZ2[2] + w3*XYZ3[2]
+
+    return (X, Y, Z)
 
 def moveVertex(vertex, movementVertex):
     vertex.x += movementVertex.x
@@ -228,6 +247,11 @@ while running:
     for event in py.event.get():
         if event.type == py.QUIT:
             running = False
+        elif event.type == py.KEYDOWN:
+            if event.key == py.K_0:
+                squares = [[100, 100, 2, red], [200, 200, 1, blue]]
+            elif event.key == py.K_1:
+                squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
     renderPixelTest(squares)
 
