@@ -43,9 +43,13 @@ fov = 30
 defaultRenderDistance = 10 # The distance at which an object will be rendered at set size
 distanceShrink = 2
 
-color_buffer = np.zeros((screen.get_height(), screen.get_width(), 4), dtype=np.uint8)  # RGBA
-layer_buffer = np.full((screen.get_height(), screen.get_width()), np.inf, dtype=np.float32)
-xv, yv = np.meshgrid(np.arange(screen.get_width()), np.arange(screen.get_height()))
+class Pixel:
+    def __init__(self, x, y, color, layer):
+        self.x, self.y, self.color, self.layer = x, y, color, layer
+
+class AllPixels:
+    def __init__(self, pixels):
+        self.pixels = pixels
 
 squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
@@ -121,7 +125,7 @@ class Face:
         mask = (α >= 0) & (β >= 0) & (γ >= 0)
 
         color_buffer[min_x:max_x, min_y:max_y][mask.T] = self.color
-        layer_buffer[min_x:max_x, min_y:max_y][mask.T] = 
+        layer_buffer[min_x:max_x, min_y:max_y][mask.T] = self.vertOne.z
 
         return pixels[min_x:max_x, min_y:max_y][mask.T]        
 
@@ -254,5 +258,6 @@ while running:
                 squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
     renderPixelTest(squares)
+    pyramid.draw(screen, pMatrix)
 
     py.display.flip()
