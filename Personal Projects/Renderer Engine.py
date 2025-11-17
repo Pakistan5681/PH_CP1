@@ -47,9 +47,8 @@ class Pixel:
     def __init__(self, x, y, color, layer):
         self.x, self.y, self.color, self.layer = x, y, color, layer
 
-class AllPixels:
-    def __init__(self, pixels):
-        self.pixels = pixels
+allPixels = []
+
 
 squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
@@ -124,8 +123,13 @@ class Face:
 
         mask = (α >= 0) & (β >= 0) & (γ >= 0)
 
-        color_buffer[min_x:max_x, min_y:max_y][mask.T] = self.color
-        layer_buffer[min_x:max_x, min_y:max_y][mask.T] = self.vertOne.z
+        pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
+
+        mask_indices = np.argwhere(mask)
+
+        for (x, y) in mask_indices:
+            allPixels.append(Pixel(x, y, self.color, ))
+
 
         return pixels[min_x:max_x, min_y:max_y][mask.T]        
 
@@ -147,10 +151,7 @@ class Shape:
         allPixels = []
 
         for i in self.faces:
-            allPixels.extend[i.draw(projectMatrix, screen)]
-
-        for i in zPositions:
-            zConnections[i].draw(projectMatrix, screen)
+            i.draw(projectMatrix, screen)
             
 
 def drawNoProjection(vertex):
@@ -232,6 +233,46 @@ def rotateFace(face, rotationType, centerPoint, angle):
 
     return face
 
+def drawSquare(vertOne, vertTwo, vertThree, vertFour, color, projectMatrix, screen):
+    faceOne = Face(vertOne, vertTwo, vertThree, color)
+    faceTwo = Face(vertFour, vertTwo, vertThree, color)
+
+    faceOne.draw(projectMatrix, screen)
+    faceTwo.draw(projectMatrix, screen)
+
+    return [faceOne, faceTwo]
+
+def drawCube(centerPoint, width, topColor, bottomColor, frontColor, backColor, leftColor, rightColor, projMatrix, screen):
+    move = width / 2
+
+    vert1 = Vertex(centerPoint.x - move, centerPoint.y - move, centerPoint.z + move)
+    vert2 = Vertex(centerPoint.x + move, centerPoint.y - move, centerPoint.z + move)
+    vert3 = Vertex(centerPoint.x - move, centerPoint.y + move, centerPoint.z + move)
+    vert4 = Vertex(centerPoint.x + move, centerPoint.y + move, centerPoint.z + move)
+    vert5 = Vertex(centerPoint.x - move, centerPoint.y - move, centerPoint.z - move)
+    vert6 = Vertex(centerPoint.x + move, centerPoint.y - move, centerPoint.z - move)
+    vert7 = Vertex(centerPoint.x - move, centerPoint.y + move, centerPoint.z - move)
+    vert8 = Vertex(centerPoint.x + move, centerPoint.y + move, centerPoint.z - move)
+
+    front = drawSquare(vert1, vert2, vert3, vert4, frontColor, projMatrix, screen)
+    back = drawSquare(vert5, vert6, vert7, vert8, backColor, projMatrix, screen)
+    top = drawSquare(vert3, vert4, vert7, vert8, topColor, projMatrix, screen)
+    bottom = drawSquare(vert1, vert2, vert5, vert6, bottomColor, projMatrix, screen)
+    left = drawSquare(vert1, vert3, vert5, vert7, leftColor, projMatrix, screen)
+    right = drawSquare(vert2, vert4, vert6, vert8, rightColor, projMatrix, screen)
+
+    faces = front
+    faces.extend(back)
+    faces.extend(left)
+    faces.extend(right)
+    faces.extend(bottom)
+    faces.extend(top)
+
+    outShape = Shape(faces)
+
+    return outShape
+
+
 vert1 = Vertex(0, 0, -50)
 vert2 = Vertex(10, -10, -40)
 vert3 = Vertex(-10, -10, -40)
@@ -243,6 +284,7 @@ face3 = Face(vert1, vert3, vert4, green)
 face4 = Face(vert2, vert3, vert4, yellow)
 
 pyramid = Shape([face1, face2, face3, face4])
+cube = drawCube(Vertex(0, 0, -50), 25, red, blue, green, yellow, orange, purple, pMatrix, screen)
 
 while running:
     clock.tick(60)
@@ -257,7 +299,9 @@ while running:
             elif event.key == py.K_1:
                 squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
-    renderPixelTest(squares)
-    pyramid.draw(screen, pMatrix)
+    cube.draw(screen, pMatrix)
+    cube.rotate("x", Vertex(0, 0, -50), 2)
+    cube.rotate("y", Vertex(0, 0, -50), 4)
+
 
     py.display.flip()
