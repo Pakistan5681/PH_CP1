@@ -2,6 +2,7 @@ import pygame as py
 import math as m
 import numpy as np
 from random import randint, choice
+import copy
 
 py.init()
 screen = py.display.set_mode((1280 * 1.5, 720 * 1.5))
@@ -49,7 +50,6 @@ class Pixel:
 
 allPixels = []
 
-
 squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
 def renderPixelTest(squares): # this is essentially a lab for me to experiment with pixel rendering
@@ -95,43 +95,40 @@ class Face:
         self.color = color
 
     def draw(self, projectMatrix, screen):
-        pointOne = self.vertOne.project(projectMatrix, screen.get_width(), screen.get_height())
-        pointTwo = self.vertTwo.project(projectMatrix, screen.get_width(), screen.get_height())
-        pointThree = self.vertThree.project(projectMatrix, screen.get_width(), screen.get_height())
+        averageZ = (self.vertOne.z + self.vertTwo.z + self.vertThree.z) / 3
 
-        a = (pointOne[0], pointOne[1])
-        b = (pointTwo[0], pointTwo[1])
-        c = (pointThree[0], pointThree[1])
+        if averageZ < -10:
+            global allPixels
 
-        pixels = py.surfarray.pixels3d(screen)
+            pointOne = self.vertOne.project(projectMatrix, screen.get_width(), screen.get_height())
+            pointTwo = self.vertTwo.project(projectMatrix, screen.get_width(), screen.get_height())
+            pointThree = self.vertThree.project(projectMatrix, screen.get_width(), screen.get_height())
+            a = (pointOne[0], pointOne[1])
+            b = (pointTwo[0], pointTwo[1])
+            c = (pointThree[0], pointThree[1])
 
-        min_x = int(max(min(a[0], b[0], c[0]), 0))
-        max_x = int(min(max(a[0], b[0], c[0]), screen.get_width()))
-        min_y = int(max(min(a[1], b[1], c[1]), 0))
-        max_y = int(min(max(a[1], b[1], c[1]), screen.get_height()))
+            pixels = py.surfarray.pixels3d(screen)
 
-        x, y = np.meshgrid(np.arange(min_x, max_x), np.arange(min_y, max_y))
+            min_x = int(max(min(a[0], b[0], c[0]), 0))
+            max_x = int(min(max(a[0], b[0], c[0]), screen.get_width()))
+            min_y = int(max(min(a[1], b[1], c[1]), 0))
+            max_y = int(min(max(a[1], b[1], c[1]), screen.get_height()))
 
-        x1, y1 = a
-        x2, y2 = b
-        x3, y3 = c
+            x, y = np.meshgrid(np.arange(min_x, max_x), np.arange(min_y, max_y))
 
-        den = ( (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3) )
-        α = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / den
-        β = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / den
-        γ = 1 - α - β
+            x1, y1 = a
+            x2, y2 = b
+            x3, y3 = c
 
-        mask = (α >= 0) & (β >= 0) & (γ >= 0)
+            den = ( (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3) )
+            α = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / den
+            β = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / den
+            γ = 1 - α - β
 
-        pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
-
-        mask_indices = np.argwhere(mask)
-
-        for (x, y) in mask_indices:
-            allPixels.append(Pixel(x, y, self.color, ))
+            mask = (α >= 0) & (β >= 0) & (γ >= 0)
 
 
-        return pixels[min_x:max_x, min_y:max_y][mask.T]        
+            pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
 
 class Shape:
     def __init__(self, faces):
@@ -159,6 +156,9 @@ def drawNoProjection(vertex):
     y = vertex.y
 
     return [x,y]
+
+def mapZ(vertOne, vertTwo, VertThree, x, y):
+    return 50
 
 def drawFace(face, screen, projectMatrix):
     vert1 = face.vertOne.project(projectMatrix, screen.get_width(), screen.get_height())
@@ -214,9 +214,9 @@ def rotateVertex(vertex, centerPoint, rotationType, angle):
         newVertexLocal[0] = (relativeVertex[0] * m.cos(angle)) + (relativeVertex[2] * m.sin(angle))
         newVertexLocal[2] = (-relativeVertex[0] * m.sin(angle)) + (relativeVertex[2] * m.cos(angle))
     elif rotationType == "z":
-        newVertexLocal[2] = relativeVertex[1]
-        newVertexLocal[0] = (relativeVertex[0] * m.cos(angle)) - (relativeVertex[1] * m.sin(angle))
-        newVertexLocal[1] = (relativeVertex[0] * m.sin(angle)) + (relativeVertex[1] * m.cos(angle))
+        newVertexLocal[0]  =  (newVertexLocal[0] * (m.cos(angle)) - newVertexLocal[1] * m.sin(angle))
+        newVertexLocal[1] =  (newVertexLocal[0] * m.sin(angle)) + (newVertexLocal[1] * m.cos(angle))
+        newVertexLocal[2] = newVertexLocal[2]
     else:
         print(f"{rotationType} is not a valid rotation")
     
@@ -245,32 +245,29 @@ def drawSquare(vertOne, vertTwo, vertThree, vertFour, color, projectMatrix, scre
 def drawCube(centerPoint, width, topColor, bottomColor, frontColor, backColor, leftColor, rightColor, projMatrix, screen):
     move = width / 2
 
-    vert1 = Vertex(centerPoint.x - move, centerPoint.y - move, centerPoint.z + move)
-    vert2 = Vertex(centerPoint.x + move, centerPoint.y - move, centerPoint.z + move)
-    vert3 = Vertex(centerPoint.x - move, centerPoint.y + move, centerPoint.z + move)
-    vert4 = Vertex(centerPoint.x + move, centerPoint.y + move, centerPoint.z + move)
-    vert5 = Vertex(centerPoint.x - move, centerPoint.y - move, centerPoint.z - move)
-    vert6 = Vertex(centerPoint.x + move, centerPoint.y - move, centerPoint.z - move)
-    vert7 = Vertex(centerPoint.x - move, centerPoint.y + move, centerPoint.z - move)
-    vert8 = Vertex(centerPoint.x + move, centerPoint.y + move, centerPoint.z - move)
+    # Create independent vertices
+    v = [Vertex(centerPoint.x - move, centerPoint.y - move, centerPoint.z + move),
+         Vertex(centerPoint.x + move, centerPoint.y - move, centerPoint.z + move),
+         Vertex(centerPoint.x - move, centerPoint.y + move, centerPoint.z + move),
+         Vertex(centerPoint.x + move, centerPoint.y + move, centerPoint.z + move),
+         Vertex(centerPoint.x - move, centerPoint.y - move, centerPoint.z - move),
+         Vertex(centerPoint.x + move, centerPoint.y - move, centerPoint.z - move),
+         Vertex(centerPoint.x - move, centerPoint.y + move, centerPoint.z - move),
+         Vertex(centerPoint.x + move, centerPoint.y + move, centerPoint.z - move)]
 
-    front = drawSquare(vert1, vert2, vert3, vert4, frontColor, projMatrix, screen)
-    back = drawSquare(vert5, vert6, vert7, vert8, backColor, projMatrix, screen)
-    top = drawSquare(vert3, vert4, vert7, vert8, topColor, projMatrix, screen)
-    bottom = drawSquare(vert1, vert2, vert5, vert6, bottomColor, projMatrix, screen)
-    left = drawSquare(vert1, vert3, vert5, vert7, leftColor, projMatrix, screen)
-    right = drawSquare(vert2, vert4, vert6, vert8, rightColor, projMatrix, screen)
+    front  = drawSquare(v[0], v[1], v[2], v[3], frontColor, projMatrix, screen)
+    back   = drawSquare(v[4], v[5], v[6], v[7], backColor, projMatrix, screen)
+    top    = drawSquare(v[2], v[3], v[6], v[7], topColor, projMatrix, screen)
+    bottom = drawSquare(v[0], v[1], v[4], v[5], bottomColor, projMatrix, screen)
+    left   = drawSquare(v[0], v[2], v[4], v[6], leftColor, projMatrix, screen)
+    right  = drawSquare(v[1], v[3], v[5], v[7], rightColor, projMatrix, screen)
 
-    faces = front
-    faces.extend(back)
-    faces.extend(left)
-    faces.extend(right)
-    faces.extend(bottom)
-    faces.extend(top)
+    faces = front + back + top + bottom + left + right
 
-    outShape = Shape(faces)
+    # deep-copy faces so no cube ever shares vertices with another
+    faces = copy.deepcopy(faces)
 
-    return outShape
+    return Shape(faces)
 
 
 vert1 = Vertex(0, 0, -50)
@@ -284,10 +281,24 @@ face3 = Face(vert1, vert3, vert4, green)
 face4 = Face(vert2, vert3, vert4, yellow)
 
 pyramid = Shape([face1, face2, face3, face4])
-cube = drawCube(Vertex(0, 0, -50), 25, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube = drawCube(Vertex(0, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube2 = drawCube(Vertex(-10, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube3 = drawCube(Vertex(10, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube4 = drawCube(Vertex(0, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube5 = drawCube(Vertex(0, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+
+cubeList = [
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
+    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen)]
+
 
 while running:
-    clock.tick(60)
+    clock.tick(120)
     screen.fill("black")
 
     for event in py.event.get():
@@ -299,9 +310,13 @@ while running:
             elif event.key == py.K_1:
                 squares = [[100, 100, 1, red], [200, 200, 2, blue]]
 
-    cube.draw(screen, pMatrix)
-    cube.rotate("x", Vertex(0, 0, -50), 2)
-    cube.rotate("y", Vertex(0, 0, -50), 4)
+    move = randint(-1, 1)
 
+
+
+
+    for i in cubeList:
+        i.move(Vertex(randint(-1, 1), randint(-1, 1), randint(-1, 1)))
+        i.draw(screen, pMatrix)
 
     py.display.flip()
