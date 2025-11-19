@@ -97,7 +97,7 @@ class Face:
     def draw(self, projectMatrix, screen):
         averageZ = (self.vertOne.z + self.vertTwo.z + self.vertThree.z) / 3
 
-        if averageZ < -10:
+        if averageZ < -20:
             global allPixels
 
             pointOne = self.vertOne.project(projectMatrix, screen.get_width(), screen.get_height())
@@ -149,6 +149,26 @@ class Shape:
 
         for i in self.faces:
             i.draw(projectMatrix, screen)
+
+    def returnZAverage(self):
+        vertZ = 0
+        count = 0
+
+        for i in self.faces:
+            average += i.vertOne
+            average += i.vertTwo
+            average += i.vertThree
+
+            count += 3
+
+        return vertZ / count
+
+class AllShapes:
+    def __init__(self, shapes):
+        self.shapes = shapes
+
+    def draw(self):
+        
             
 
 def drawNoProjection(vertex):
@@ -287,15 +307,7 @@ cube3 = drawCube(Vertex(10, 0, -50), 3, red, blue, green, yellow, orange, purple
 cube4 = drawCube(Vertex(0, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
 cube5 = drawCube(Vertex(0, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
 
-cubeList = [
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen),
-    drawCube(Vertex(randint(-10, 10), randint(-10, 10), randint(-50, -20)), 10, red, blue, green, yellow, orange, purple, pMatrix, screen)]
-
+cubeList = [cube, cube2, cube3, cube4, cube5]
 
 while running:
     clock.tick(120)
@@ -316,7 +328,7 @@ while running:
 
 
     for i in cubeList:
-        i.move(Vertex(randint(-1, 1), randint(-1, 1), randint(-1, 1)))
+        i.rotate("x", Vertex(0, 0, -50), 1)
         i.draw(screen, pMatrix)
 
     py.display.flip()
