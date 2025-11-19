@@ -155,9 +155,9 @@ class Shape:
         count = 0
 
         for i in self.faces:
-            average += i.vertOne
-            average += i.vertTwo
-            average += i.vertThree
+            vertZ += i.vertOne.z
+            vertZ += i.vertTwo.z
+            vertZ += i.vertThree.z
 
             count += 3
 
@@ -167,8 +167,17 @@ class AllShapes:
     def __init__(self, shapes):
         self.shapes = shapes
 
-    def draw(self):
-        
+    def draw(self, screen, projMatrix):
+        averages = []
+        aConnects = {}
+        for i in self.shapes: 
+            averages.append(i.returnZAverage())
+            aConnects[i.returnZAverage()] = i
+
+        averages.sort()
+
+        for i in averages:
+            aConnects[i].draw(screen, projMatrix)
             
 
 def drawNoProjection(vertex):
@@ -309,6 +318,8 @@ cube5 = drawCube(Vertex(0, -10, -50), 3, red, blue, green, yellow, orange, purpl
 
 cubeList = [cube, cube2, cube3, cube4, cube5]
 
+shapes = AllShapes(cubeList)
+
 while running:
     clock.tick(120)
     screen.fill("black")
@@ -325,10 +336,6 @@ while running:
     move = randint(-1, 1)
 
 
-
-
-    for i in cubeList:
-        i.rotate("x", Vertex(0, 0, -50), 1)
-        i.draw(screen, pMatrix)
+    shapes.draw(screen, pMatrix)
 
     py.display.flip()

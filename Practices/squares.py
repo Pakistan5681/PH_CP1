@@ -1,0 +1,1 @@
+[print(f"{i**.5} squared is {i}")for i in map(lambda n:n**2,range(99))]
