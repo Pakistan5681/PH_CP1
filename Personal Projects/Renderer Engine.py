@@ -127,8 +127,16 @@ class Face:
 
             mask = (α >= 0) & (β >= 0) & (γ >= 0)
 
-
             pixels[min_x:max_x, min_y:max_y][mask.T] = self.color
+
+    def retrunZaverage(self):
+        vertZ = 0
+
+        vertZ += self.vertOne.z
+        vertZ += self.vertTwo.z
+        vertZ += self.vertThree.z
+
+        return vertZ / 3
 
 class Shape:
     def __init__(self, faces):
@@ -148,7 +156,13 @@ class Shape:
         allPixels = []
 
         for i in self.faces:
-            i.draw(projectMatrix, screen)
+            zPositions.append(i.retrunZaverage())
+            zConnections[i.retrunZaverage()] = i
+
+        zPositions.sort()
+
+        for i in zPositions:
+            zConnections[i].draw(screen, projectMatrix)
 
     def returnZAverage(self):
         vertZ = 0
@@ -315,8 +329,13 @@ cube2 = drawCube(Vertex(-10, 0, -50), 3, red, blue, green, yellow, orange, purpl
 cube3 = drawCube(Vertex(10, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
 cube4 = drawCube(Vertex(0, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
 cube5 = drawCube(Vertex(0, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube6 = drawCube(Vertex(10, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube7 = drawCube(Vertex(-10, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube8 = drawCube(Vertex(10, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube9 = drawCube(Vertex(10, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube10 = drawCube(Vertex(-10, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
 
-cubeList = [cube, cube2, cube3, cube4, cube5]
+cubeList = [cube, cube2, cube3, cube4, cube5, cube6, cube7, cube8, cube9, cube10]
 
 shapes = AllShapes(cubeList)
 
@@ -337,5 +356,8 @@ while running:
 
 
     shapes.draw(screen, pMatrix)
+    for i in shapes.shapes:
+        i.rotate("x", Vertex(0, 0, -50), 2)
+        i.rotate("y", Vertex(0, 0, -50), 2)
 
     py.display.flip()
