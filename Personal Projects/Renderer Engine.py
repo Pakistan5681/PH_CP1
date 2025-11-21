@@ -162,7 +162,7 @@ class Shape:
         zPositions.sort()
 
         for i in zPositions:
-            zConnections[i].draw(screen, projectMatrix)
+            zConnections[i].draw(projectMatrix, screen)
 
     def returnZAverage(self):
         vertZ = 0
@@ -313,34 +313,36 @@ def drawCube(centerPoint, width, topColor, bottomColor, frontColor, backColor, l
     return Shape(faces)
 
 
-vert1 = Vertex(0, 0, -50)
-vert2 = Vertex(10, -10, -40)
-vert3 = Vertex(-10, -10, -40)
-vert4 = Vertex(0, -10, -60)
+vert1 = Vertex(0, 0, -100)
+vert2 = Vertex(20, -20, -80)
+vert3 = Vertex(-20, -20, -80)
+vert4 = Vertex(0, -20, -120)
 
 face1 = Face(vert1, vert2, vert3, red)
 face2 = Face(vert1, vert2, vert4, blue)
 face3 = Face(vert1, vert3, vert4, green)
 face4 = Face(vert2, vert3, vert4, yellow)
 
+size = 5
+
 pyramid = Shape([face1, face2, face3, face4])
-cube = drawCube(Vertex(0, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube2 = drawCube(Vertex(-10, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube3 = drawCube(Vertex(10, 0, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube4 = drawCube(Vertex(0, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube5 = drawCube(Vertex(0, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube6 = drawCube(Vertex(10, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube7 = drawCube(Vertex(-10, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube8 = drawCube(Vertex(10, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube9 = drawCube(Vertex(10, 10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
-cube10 = drawCube(Vertex(-10, -10, -50), 3, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube = drawCube(Vertex(0, 0, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube2 = drawCube(Vertex(-10, 0, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube3 = drawCube(Vertex(10, 0, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube4 = drawCube(Vertex(0, 10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube5 = drawCube(Vertex(0, -10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube6 = drawCube(Vertex(10, 10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube7 = drawCube(Vertex(-10, 10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube8 = drawCube(Vertex(10, -10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube9 = drawCube(Vertex(10, 10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
+cube10 = drawCube(Vertex(-10, -10, -50), size, red, blue, green, yellow, orange, purple, pMatrix, screen)
 
 cubeList = [cube, cube2, cube3, cube4, cube5, cube6, cube7, cube8, cube9, cube10]
 
 shapes = AllShapes(cubeList)
 
 while running:
-    clock.tick(120)
+    clock.tick(60)
     screen.fill("black")
 
     for event in py.event.get():
@@ -354,10 +356,11 @@ while running:
 
     move = randint(-1, 1)
 
-
+    pyramid.draw(screen, pMatrix)
+    pyramid.rotate("y", Vertex(0, 0, -100), 5)
     shapes.draw(screen, pMatrix)
     for i in shapes.shapes:
         i.rotate("x", Vertex(0, 0, -50), 2)
-        i.rotate("y", Vertex(0, 0, -50), 2)
+        i.rotate("y", Vertex(0, 0, -50), 3)
 
     py.display.flip()
