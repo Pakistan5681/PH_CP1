@@ -167,11 +167,12 @@ exits = {}
 turns = {}
 enemies = {}
 
-inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic")]
+inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic"), Item("sniper rifle", 2, 15, "weapon", "epic")]
+equippedWeapons = ["none", "none", "none"]
 
 
 lootTable = {
-	"scrap" : 50,
+	"scrap" : 30,
 	"advanced scrap" : 7,
 	"small gas canister" : 30,
 	"medium gas canister" : 10,
@@ -302,35 +303,35 @@ def checkInventory(inventory):
 			inventory.remove(i)
 
 
-def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory):
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons):
 	if world[(playerPos, playerRoad)] == "empty":
 		if enemies[(playerPos, playerRoad)] == "empty":
 
 			itemInput = input("Do you want to use an item?")
 			
-			while itemInput != "yes" and itemInput != "no":
+			while itemInput != "yes" and itemInput != "no" :
 				print("Invalid answer")
-				itemInput = input("Do you want to use an item?")
+				itemInput = input("Do you want to use an item?" )
 			if itemInput == "yes":
 				gas, mechanicsSkill, inventory, health, maxHealth = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
 
 
 			if health < maxHealth:
-				itemInput = input("Do you want to make repairs?")
+				itemInput = input("Do you want to make repairs?" )
 			
 				while itemInput != "yes" and itemInput != "no":
 					print("Invalid answer")
-					itemInput = input("Do you want to make repairs?")
+					itemInput = input("Do you want to make repairs?" )
 				if itemInput == "yes":
 					makeRepairs()
 
-			itemInput = input("Do you want to modify your car?")
+			itemInput = input("Do you want to modify your car?" )
 			
 			while itemInput != "yes" and itemInput != "no":
 				print("Invalid answer")
-				itemInput = input("Do you want to modify your car?")
+				itemInput = input("Do you want to modify your car?" )
 			if itemInput == "yes":
-				modCar()
+				inventory, equippedWeapons = modCar(inventory,equippedWeapons)
 			else:
 				playerPos += 1
 				return gas, mechanicsSkill, inventory, health, maxHealth
@@ -438,25 +439,56 @@ def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 def makeRepairs():
 	pass
 
-def modCar(inventory):
-	weapons = {}
-	for i in inventory:
-		if i.type == "weapon":
-			weapons[i.name] = i
+def modCar(inventory, equippedWeapons):
+	while True:
+		items = {}
+		nameIndex = {}
 
-Function ModCar
-	Weapons = []
-	Loop i in inventory:
-		If item type is weapon
-			Add i to weapons
-			print you have a(n) i
+		if inventory== None:
+			print("Your inventory is empty")
+			return inventory, equippedWeapons
 
-	Ask player what they want to attach (give them the option to leave this menu as well)
+		for i in inventory:
+			if i.type == "weapon":
+				items[i.name] = i
+				nameIndex[i.name] = inventory.index(i)
+				print(f"You have {i.amount} {i.name}(s)")
 
-	If the item is in weapons and the players mechanics skill is high enough
-		Ask them what slot they want to use
-Set that slot to the name of the weapon
+		if len(items) <= 0:
+			print("You have no weapons in your inventory")
+			return inventory, equippedWeapons
 
-Ask the player whether or not they want to keep modifying their car
+		weaponToEquip = input("What weapon do you want to equip.Type the name of the weapon or 'quit'to leave the menu ")
 
-PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory)
+		while not weaponToEquip in items.keys() and weaponToEquip != "quit":
+			print("You dont have that")
+			weaponToEquip = input("What weapon do you want to equip.Type the name of the weapon or 'quit' to leave the menu ")
+
+		if weaponToEquip == "quit":
+			return inventory, equippedWeapons
+
+		print(f"What slot do you want to attach the {weaponToEquip} to?")
+		slot = input("Type '1', '2', or '3'")
+
+		while slot != "1" and slot != "2" and slot != "3":
+			print("Invalid slot")
+			slot = input("Type '1', '2', or '3'")
+			
+		if equippedWeapons[int(slot)] == "none":
+			equippedWeapons[int(slot)] = weaponToEquip
+			print(f"{weaponToEquip} equipped to slot {slot}")
+			inventory[nameIndex[weaponToEquip]].amount -= 1
+		else:
+			print(f"You already have a(n) {equippedWeapons[int(slot)]} attached to slot {slot}")
+			yesNo = input("Do you want to replace it? 'yes' or 'no'? ")
+			while yesNo != "yes" and yesNo != "no":
+				print("Invalid answer")
+				yesNo = input(f"Do you want to replace the {equippedWeapons[int(slot)]}? 'yes' or 'no'? ")
+
+			if yesNo == "yes":
+				equippedWeapons[int(slot)] =  weaponToEquip
+				inventory[nameIndex[weaponToEquip]].amount -= 1
+
+		inventory = checkInventory(inventory)
+
+PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons)
