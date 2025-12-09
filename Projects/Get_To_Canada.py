@@ -43,22 +43,6 @@ turnDirection = “right”
 			Turn[(worldpos, playerRoad)] = 1
 
     Return turn
-
-
-Function ModCar
-	Weapons = []
-	Loop i in inventory:
-		If item type is weapon
-			Add i to weapons
-			print you have a(n) i
-
-	Ask player what they want to attach (give them the option to leave this menu as well)
-
-	If the item is in weapons and the players mechanics skill is high enough
-		Ask them what slot they want to use
-Set that slot to the name of the weapon
-
-Ask the player whether or not they want to keep modifying their car
 	
 
 Function CalcWeaponDamage(hitchance, hitCount, damageMin, damageMax, name)
@@ -152,7 +136,7 @@ class Enemy:
 		self.health = health
 		
 class Weapon:
-	def __init__(self, damageMin, damageMax, shots, hitChance):
+	def __init__(self, damageMin, damageMax, shots, hitChance, installSkill):
 		self.damageMin = damageMin
 		self.damageMax = damageMax
 		self.shots = shots
@@ -174,11 +158,17 @@ playerRoad = 0
 
 carHealth = 20
 maxHealth = 20
+gas = 30
+maxGas = 30
+mechanicsSkill = 5
 
 world = {}
 exits = {}
 turns = {}
 enemies = {}
+
+inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic")]
+
 
 lootTable = {
 	"scrap" : 50,
@@ -189,23 +179,26 @@ lootTable = {
 	"beginner mechanics manual" : 25,
 	"intermediate mechanics manual" : 10,
 	"advanced mechanics manual" : 4,
+	"steel plate" : 20,
+	"reinforced steel plate" : 7,
+	"diamond-steel plate" : 2
 }
 
 weapons = {
-	"potato launcher" : Weapon(3, 5, 1, 75),
-	"plank" : Weapon(8, 10, 1, 45),
-	"paintball gun" : Weapon(1, 2, 8, 60),
-	"box of nails" : Weapon(1, 2, 25, 10),
-	"air fryer" : Weapon(20, 22, 1, 25),
-	"shotgun" : Weapon(3, 8, 7, 50),
-	"harpoon launcher" : Weapon(30, 38, 1, 45),
-	"brick catapult" : Weapon(5, 15, 3, 50),
-	"spear" : Weapon(15, 25, 1, 97),
-	"sniper rifle" : Weapon(30, 50, 1, 98),
-	"minigun" : Weapon(2, 10, 20, 55),
-	"flamethrower" : Weapon(2, 30, 3, 66),
-	"lazer cannon" : Weapon(1, 3, 50, 75),
-	"VMARPG" : Weapon(100, 250, 1, 15),
+	"potato launcher" : Weapon(3, 5, 1, 75, 5),
+	"plank" : Weapon(8, 10, 1, 45, 6),
+	"paintball gun" : Weapon(1, 2, 8, 60, 7),
+	"box of nails" : Weapon(1, 2, 25, 10, 8),
+	"air fryer" : Weapon(20, 22, 1, 25, 9),
+	"shotgun" : Weapon(3, 8, 7, 50, 15),
+	"harpoon launcher" : Weapon(30, 38, 1, 45, 17),
+	"brick catapult" : Weapon(5, 15, 3, 50, 19),
+	"spear" : Weapon(15, 25, 1, 97, 21),
+	"sniper rifle" : Weapon(30, 50, 1, 98, 30),
+	"minigun" : Weapon(2, 10, 20, 55, 33),
+	"flamethrower" : Weapon(2, 30, 3, 66, 36),
+	"lazer cannon" : Weapon(1, 3, 50, 75, 50),
+	"VMARPG" : Weapon(100, 250, 1, 15, 60),
 }
 
 enemyWeaponChances = {
@@ -303,8 +296,13 @@ world, exits, turns, enemies = worldGen(worldWidth, worldLength, parsedLootTable
 for i in enemies.keys():
 	print(f"{i} : {enemies[i]}")
 
+def checkInventory(inventory):
+	for i in inventory:
+		if i.amount <= 0:
+			inventory.remove(i)
 
-def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth):
+
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory):
 	if world[(playerPos, playerRoad)] == "empty":
 		if enemies[(playerPos, playerRoad)] == "empty":
 
@@ -314,7 +312,8 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth):
 				print("Invalid answer")
 				itemInput = input("Do you want to use an item?")
 			if itemInput == "yes":
-				useItem()
+				gas, mechanicsSkill, inventory, health, maxHealth = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+
 
 			if health < maxHealth:
 				itemInput = input("Do you want to make repairs?")
@@ -334,6 +333,7 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth):
 				modCar()
 			else:
 				playerPos += 1
+				return gas, mechanicsSkill, inventory, health, maxHealth
 		else:
 			while True:
 				if DoCombat(enemies[(playerPos,playerRoad)]):
@@ -352,39 +352,111 @@ def DoExit():
 def DoTurn():
 	pass
 
-def useItem(inventory):
-	items = []
-	for i in inventory:
-		if i.type == "consumable":
-			items.append(i)
-			print(f"You have {i.amount} {i.name}(s)")
+def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
+	
+	while True:
+		if inventory == None:
+			print("your inventory is empty")
+			return gas, mechanicsSkill, inventory, health, maxHealth
+		items = {}
+		nameIndex = {}
+		for i in inventory:
+			if i.type == "consumable":
+				items[i.name] = i
+				print(f"You have {i.amount} {i.name}(s)")
 
-		itemToUse = input("What item do you want to use? ")
+			nameIndex[i.name] = inventory.index(i)
+		itemToUse = input("What item do you want to use? Type the name of the item or 'quit' to exit: ")
+
+		while not itemToUse in items.keys() and itemToUse != "quit":
+			print("You do not have that item")
+			itemToUse = input("What item do you want to use? Type the name of the item or 'quit' to exit: ")
+
+		if itemToUse != "quit": print(f"You use the {itemToUse}")
+
+		if itemToUse == "small gas canister":
+			if gas < maxGas:
+				gas += 3
+				if gas > maxGas:
+					gas = maxGas
+				print(f"You now have {gas} gasoline in your tank")
+
+				inventory[nameIndex[itemToUse]].amount -= 1
+			else: print("You already have maxium gas in your tank")
+		elif itemToUse == "medium gas canister":
+			if gas < maxGas:
+				gas += 7
+				if gas > maxGas:
+					gas = maxGas
+				print(f"You now have {gas} gasoline in your tank")
+
+				inventory[nameIndex[itemToUse]].amount -= 1
+			else: print("You already have maxium gas in your tank")
+		elif itemToUse == "beeg gas canister":
+			if gas < maxGas:
+				gas += 12
+				if gas > maxGas:
+					gas = maxGas
+				print(f"You now have {gas} gasoline in your tank")
+
+				inventory[nameIndex[itemToUse]].amount -= 1
+			else: print("You already have maxium gas in your tank")
+		elif itemToUse == "beginners mechanics manual":
+			mechanicsSkill += 1
+			print(f"You now have {mechanicsSkill} mechanics skill.")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "intermediate mechanics manual":
+			mechanicsSkill += 3
+			print(f"You now have {mechanicsSkill} mechanics skill.")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "advanced mechanics manual":
+			mechanicsSkill += 6
+			print(f"You now have {mechanicsSkill} mechanics skill.")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "steel plate":
+			maxHealth += 5
+			health = maxHealth
+			print(f"You now have {maxHealth} car health.")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "reinforced steel plate":
+			maxHealth += 15
+			health = maxHealth
+			print(f"You now have {maxHealth} car health.")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "diamond-steel plate":
+			maxHealth += 45
+			health = maxHealth
+			print(f"You now have {maxHealth} car health.")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "quit":
+			inventory = checkInventory(inventory)
+			return gas, mechanicsSkill, inventory, health, maxHealth
+		
+		inventory = checkInventory(inventory)
+
 
 def makeRepairs():
 	pass
 
-def modCar():
-	pass
+def modCar(inventory):
+	weapons = {}
+	for i in inventory:
+		if i.type == "weapon":
+			weapons[i.name] = i
 
-Function Use Item
-Items = []
-Loop i in inventory
-If item is any of the mechanics manuals or and gas canisters
-Add i to items
-Print you have i.count i.item
+Function ModCar
+	Weapons = []
+	Loop i in inventory:
+		If item type is weapon
+			Add i to weapons
+			print you have a(n) i
 
-Ask the player what item they want to use
+	Ask player what they want to attach (give them the option to leave this menu as well)
 
-If the item is small gas canister
-Gas += 3	
-	If the item is medium gas canister
-Gas += 7	
-If the item is beeg gas canister
-Gas += 12	
-If the item is beginners mechanics manual
-Mechanics Skill += 1	
-If the item is intermediate mechanics manual
-Mechanics Skill += 3	
-If the item is professional mechanics manual
-Mechanics Skill += 6	
+	If the item is in weapons and the players mechanics skill is high enough
+		Ask them what slot they want to use
+Set that slot to the name of the weapon
+
+Ask the player whether or not they want to keep modifying their car
+
+PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory)
