@@ -307,7 +307,6 @@ def drawCube(centerPoint, width, topColor, bottomColor, frontColor, backColor, l
 
     faces = front + back + top + bottom + left + right
 
-    # deep-copy faces so no cube ever shares vertices with another
     faces = copy.deepcopy(faces)
 
     return Shape(faces)
@@ -343,24 +342,22 @@ shapes = AllShapes(cubeList)
 
 while running:
     clock.tick(60)
-    screen.fill("black")
+    screen.fill("grey")
+
+    shapes.draw(screen, pMatrix)
 
     for event in py.event.get():
         if event.type == py.QUIT:
             running = False
         elif event.type == py.KEYDOWN:
             if event.key == py.K_0:
-                squares = [[100, 100, 2, red], [200, 200, 1, blue]]
+                for i in shapes.shapes:
+                    i.rotate("x", Vertex(0, 0, -50), 25)
             elif event.key == py.K_1:
-                squares = [[100, 100, 1, red], [200, 200, 2, blue]]
-
-    move = randint(-1, 1)
-
-    pyramid.draw(screen, pMatrix)
-    pyramid.rotate("y", Vertex(0, 0, -100), 5)
-    shapes.draw(screen, pMatrix)
-    for i in shapes.shapes:
-        i.rotate("x", Vertex(0, 0, -50), 2)
-        i.rotate("y", Vertex(0, 0, -50), 3)
-
+                for i in shapes.shapes:
+                    i.rotate("y", Vertex(0, 0, -50), 25)
+            elif event.key == py.K_2:
+                for i in shapes.shapes:
+                    i.rotate("z", Vertex(0, 0, -50), 5)   
+        
     py.display.flip()
