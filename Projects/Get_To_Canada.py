@@ -137,47 +137,9 @@ Tell player all the stats
 Return false
 
 
-Function Use Item
-Items = []
-Loop i in inventory
-If item is any of the mechanics manuals or and gas canisters
-Add i to items
-Print you have i.count i.item
 
-Ask the player what item they want to use
 
-If the item is small gas canister
-Gas += 3	
-	If the item is medium gas canister
-Gas += 7	
-If the item is beeg gas canister
-Gas += 12	
-If the item is beginners mechanics manual
-Mechanics Skill += 1	
-If the item is intermediate mechanics manual
-Mechanics Skill += 3	
-If the item is professional mechanics manual
-Mechanics Skill += 6	
 
-Function PlayerTurn(param world, param playerRoad, param playerPos)
-
-	If world[(playerPos, playerRoad)] = “empty”
-		If enemies[(playerPos, playerRoad)] = “empty”
-			Ask the player if they want to use an item
-				If yes useItem()
-			If the cars health is less then cars max health Ask the player if they want to make repairs
-				If yes makeRepairs()
-			Ask player if they want to modify their car
-				If yes modCar()
-				If no move forward and end turn
-		Else 
-			While true
-If DoCombat(enemies[(playerPos,playerRoad)])
-Break
-	Elif world[(playerPos, playerRoad)] = “exit”:
-		DoExit()
-	Elif world[(playerPos, playerRoad)] = “turn”:
-		DoTurn()
 """
 from random import randint, choice
 
@@ -196,13 +158,26 @@ class Weapon:
 		self.shots = shots
 		self.hitChance = hitChance
 
+class Item:
+	def __init__(self, name, amount, weight, type, rarity):
+		self.name = name
+		self.amount = amount
+		self.weight = weight
+		self.type = type
+		self.rarity = rarity
+
 worldWidth = 3
 worldLength = 100
 
+playerPos = 0
+playerRoad = 0
+
+carHealth = 20
+maxHealth = 20
+
 world = {}
-
 exits = {}
-
+turns = {}
 enemies = {}
 
 lootTable = {
@@ -236,33 +211,42 @@ weapons = {
 enemyWeaponChances = {
 	"potato launcher" : 20,
 	"plank" : 20,
-	"plank" : 20,
-	"plank" : 20,
-	"plank" : 20,
-	"plank" : 10,
-	"plank" : 10,
-	"plank" : 10,
-	"plank" : 10,
-	"plank" : 5,
-	"plank" : 5,
-	"plank" : 5,
-	"plank" : 2,
-	"plank" : 2,
-	
+	"paintball gun" : 20,
+	"box of nails" : 20,
+	"air fryer" : 20,
+	"shotgun" : 10,
+	"harpoon launcher" : 10,
+	"brick catapult" : 10,
+	"spear" : 10,
+	"sniper rifle" : 5,
+	"minigun" : 5,
+	"flamethrower" : 5,
+	"lazer cannon" : 2,
+	"VMARPG" : 2,
 }
+
+names = ["Tesla Model X"]
+
+parsedEnemyWeaponChances = []
+for i in enemyWeaponChances.keys():
+	for j in range(enemyWeaponChances[i]):
+		parsedEnemyWeaponChances.append(i)
 
 parsedLootTable = []
 for i in lootTable.keys():
 	for j in range(lootTable[i]):
 		parsedLootTable.append(i)
-		
-print(parsedLootTable)
 
 def randomBool(trueChance):
 	randomNum = randint(0, 100)
 	return randomNum <= trueChance
 
-def worldGen(worldWidth, worldLength, parsedLootTable):
+def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances, playerPos, names):
+	world = {}
+	turns = {}
+	exits = {}
+	enemies = {}
+
 	for i in range(-worldWidth, worldWidth + 1):
 		for j in range(worldLength):
 			if randomBool(5):
@@ -270,11 +254,15 @@ def worldGen(worldWidth, worldLength, parsedLootTable):
 				exits[(j, i)] = exit(parsedLootTable)
 			elif randomBool(5):
 				world[(j, i)] = "turn"
-				turn(i)
+				turns[(j, i)] = turn(i, worldWidth)
 			else:
 				world[(j, i)] = "empty"
 				if randomBool(10):
-					enemies[(j, i)]
+					enemies[(j, i)] = createEnemy(parsedEnemyWeaponChances, j, names)
+				else:
+					enemies[(j, i)] = "empty"
+
+	return world, exits, turns, enemies
 			
 def exit(parsedLootTable):
 	newList = []
@@ -283,17 +271,120 @@ def exit(parsedLootTable):
 		localLoot = []
 		lootCount = randint(3, 7)
 		for i in range(lootCount):
-			pass
 			localLoot.append(choice(parsedLootTable))
             
 		newList.append(localLoot)
 	return newList
             
-def turn(turns) :
+def turn(turns, worldWidth) :
 	listy = [-1, 1]
-	moveOut = turns + choice(listy)
+	number = 0
+	if turns == -worldWidth:
+		number = 1
+	elif turns == worldWidth:
+		number = -1
+	else:
+		number = choice(listy)
+		
+	moveOut = turns + number
 	return moveOut 
 
-def createEnemy():
+def createEnemy(weaponList, distance, names):
+	weapOne = choice(weaponList)
+	weapTwo = choice(weaponList)
+	weapThree = choice(weaponList)
+	health = randint(1, 3) * (distance + 1)
+	name = choice(names)
+
+	return Enemy(name, weapOne, weapTwo, weapThree, health)
+
+world, exits, turns, enemies = worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances, playerPos, names)
+
+for i in enemies.keys():
+	print(f"{i} : {enemies[i]}")
+
+
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth):
+	if world[(playerPos, playerRoad)] == "empty":
+		if enemies[(playerPos, playerRoad)] == "empty":
+
+			itemInput = input("Do you want to use an item?")
+			
+			while itemInput != "yes" and itemInput != "no":
+				print("Invalid answer")
+				itemInput = input("Do you want to use an item?")
+			if itemInput == "yes":
+				useItem()
+
+			if health < maxHealth:
+				itemInput = input("Do you want to make repairs?")
+			
+				while itemInput != "yes" and itemInput != "no":
+					print("Invalid answer")
+					itemInput = input("Do you want to make repairs?")
+				if itemInput == "yes":
+					makeRepairs()
+
+			itemInput = input("Do you want to modify your car?")
+			
+			while itemInput != "yes" and itemInput != "no":
+				print("Invalid answer")
+				itemInput = input("Do you want to modify your car?")
+			if itemInput == "yes":
+				modCar()
+			else:
+				playerPos += 1
+		else:
+			while True:
+				if DoCombat(enemies[(playerPos,playerRoad)]):
+					break
+	elif world[(playerPos, playerRoad)] == "exit":
+		DoExit()
+	elif world[(playerPos, playerRoad)] == "turn":
+		DoTurn()
 	
-	
+def DoCombat():
+	pass
+
+def DoExit():
+	pass
+
+def DoTurn():
+	pass
+
+def useItem(inventory):
+	items = []
+	for i in inventory:
+		if i.type == "consumable":
+			items.append(i)
+			print(f"You have {i.amount} {i.name}(s)")
+
+		itemToUse = input("What item do you want to use? ")
+
+def makeRepairs():
+	pass
+
+def modCar():
+	pass
+
+Function Use Item
+Items = []
+Loop i in inventory
+If item is any of the mechanics manuals or and gas canisters
+Add i to items
+Print you have i.count i.item
+
+Ask the player what item they want to use
+
+If the item is small gas canister
+Gas += 3	
+	If the item is medium gas canister
+Gas += 7	
+If the item is beeg gas canister
+Gas += 12	
+If the item is beginners mechanics manual
+Mechanics Skill += 1	
+If the item is intermediate mechanics manual
+Mechanics Skill += 3	
+If the item is professional mechanics manual
+Mechanics Skill += 6	
