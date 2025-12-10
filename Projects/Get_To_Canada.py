@@ -56,29 +56,7 @@ hitCount += 1
 
 	print(The name hit hitcount times and dealt totalDamage damage)
 Return total damage
-			
-Function DoExit()
-	While true
-Ask the player what number building they want to go to (number is determined by the length of the loot list)
-
-Loop i in buildingList[buildingChoice]
-	Tell the player the loot
-	Add i to loot
-
-While true
-Ask player what loot they want
-	If the loot exists add it to inventory
-Ask player if they are done looting	
-	If they are break
-	Ask player if they are done with the exit
-		If they are break
-
-Function MakeRepairs()
-	Scrap equals every “scrap” item in inventory
-
-	Ask player how much scrap they want to use (each scrap heals 3 health, each super scrap heals 30 health)
-
-	Adjust health accordingly
+		
 
 Function DoCombat(playerpos, playerroad)
 Enemy = enemies[(playerpos, playerroad)]
@@ -156,7 +134,7 @@ worldLength = 100
 playerPos = 0
 playerRoad = 0
 
-carHealth = 20
+carHealth = 10
 maxHealth = 20
 gas = 30
 maxGas = 30
@@ -167,13 +145,13 @@ exits = {}
 turns = {}
 enemies = {}
 
-inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic"), Item("sniper rifle", 2, 15, "weapon", "epic")]
+inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic"), Item("sniper rifle", 2, 15, "weapon", "epic"), Item("scrap", 15, 1, "scrap", "common")]
 equippedWeapons = ["none", "none", "none"]
 
 
 lootTable = {
 	"scrap" : 30,
-	"advanced scrap" : 7,
+	"advanced scrap" : 3,
 	"small gas canister" : 30,
 	"medium gas canister" : 10,
 	"large gas canister" : 5,
@@ -200,6 +178,14 @@ weapons = {
 	"flamethrower" : Weapon(2, 30, 3, 66, 36),
 	"lazer cannon" : Weapon(1, 3, 50, 75, 50),
 	"VMARPG" : Weapon(100, 250, 1, 15, 60),
+}
+
+itemDefinitions = {
+	"scrap" : "A jumble of scrap metal. Recovers three health points.",
+
+
+
+
 }
 
 enemyWeaponChances = {
@@ -261,7 +247,7 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances,
 def exit(parsedLootTable):
 	newList = []
 	
-	for i in range(randint(1, 3)):
+	for i in range(3):
 		localLoot = []
 		lootCount = randint(3, 7)
 		for i in range(lootCount):
@@ -302,8 +288,18 @@ def checkInventory(inventory):
 		if i.amount <= 0:
 			inventory.remove(i)
 
+def itemDictionary(itemDefs):
+	while True:
+		itemToLookup = input("What item do you want to define")
 
-def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons):
+		while not itemToLookup in itemDefs.keys():
+			print("That's not a real item")
+			itemToLookup = input("What item do you want to define")
+
+		print(f"{itemToLookup}: {itemDefs[itemToLookup]}")
+
+
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits):
 	if world[(playerPos, playerRoad)] == "empty":
 		if enemies[(playerPos, playerRoad)] == "empty":
 
@@ -323,7 +319,7 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 					print("Invalid answer")
 					itemInput = input("Do you want to make repairs?" )
 				if itemInput == "yes":
-					makeRepairs()
+					inventory, health = makeRepairs(inventory, health, maxHealth)
 
 			itemInput = input("Do you want to modify your car?" )
 			
@@ -340,15 +336,45 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 				if DoCombat(enemies[(playerPos,playerRoad)]):
 					break
 	elif world[(playerPos, playerRoad)] == "exit":
-		DoExit()
+		DoExit(playerPos, playerRoad, exits, itemDefs)
 	elif world[(playerPos, playerRoad)] == "turn":
 		DoTurn()
 	
 def DoCombat():
 	pass
 
-def DoExit():
-	pass
+def DoExit(playerPos, playerRoad, exits, itemDefs):
+	exit = exits[playerPos, playerRoad]
+
+	while True:
+		print("What building do you want to loot")
+		loot = []
+
+		buildingToLoot = input("Pick options '1', '2', or '3'.")
+		while buildingToLoot != '1' and buildingToLoot != '2'and buildingToLoot != '3':
+			print("Invalid input")
+			buildingToLoot = input("Pick options '1', '2', or '3'.")
+		buildingToLoot = int(buildingToLoot)
+
+		for i in exit[buildingToLoot]:
+			print(f"There is a(n) {i}")
+			loot.append(i)
+
+		while True:
+			itemToGrab = input("What item do you want to grab. Type the name of the item or 'quit' to leave this building. \nType 'def' to open the item definiton menu ")
+
+			while not itemToGrab in loot and itemToGrab != "quit" and itemToGrab != "def":
+				print("That item is not there")
+				itemToUse = input("What item do you want to grab? Type the name of the item or 'quit' to exit. \nType 'def' to open the item definiton menu  ")
+
+			if itemToGrab == "quit":
+				pass
+			elif itemToGrab == "def":
+				itemDictionary(itemDefs)
+
+			break
+
+		break
 
 def DoTurn():
 	pass
@@ -436,8 +462,46 @@ def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 		inventory = checkInventory(inventory)
 
 
-def makeRepairs():
-	pass
+def makeRepairs(inventory, health, maxHealth):
+	while True:
+		items = {}
+		nameIndex = {}
+
+		if inventory== None:
+			print("Your inventory is empty")
+			return inventory, health
+
+		for i in inventory:
+			if i.type == "scrap":
+				items[i.name] = i
+				nameIndex[i.name] = inventory.index(i)
+				print(f"You have {i.amount} {i.name}")
+
+		if len(items) <= 0:
+			print("You have no scrap in your inventory")
+			return inventory, health
+
+		scrapToUse = input("What scrap do you want to use. Type the name of the scrap or 'quit'to leave the menu ")
+
+		while not scrapToUse in items.keys() and scrapToUse != "quit":
+			print("You dont have that")
+			scrapToUse = input("What scrap do you want to use. Type the name of the scrap or 'quit'to leave the menu ")
+
+		if scrapToUse == "quit":
+			return inventory, health
+		
+		if scrapToUse == "scrap":
+			health += 3
+			if health > maxHealth: health = maxHealth
+			print(f"Your health is now {health}")
+			inventory[nameIndex[scrapToUse]].amount -= 1
+		elif scrapToUse == "advanced scrap":
+			health += 3
+			if health > maxHealth: health = maxHealth
+			print(f"Your health is now {health}")
+			inventory[nameIndex[scrapToUse]].amount -= 1
+
+		inventory = checkInventory(inventory)
 
 def modCar(inventory, equippedWeapons):
 	while True:
@@ -491,4 +555,4 @@ def modCar(inventory, equippedWeapons):
 
 		inventory = checkInventory(inventory)
 
-PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons)
+PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits)
