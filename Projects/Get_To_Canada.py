@@ -163,6 +163,20 @@ itemTable = {
 	"steel plate" : Item("steel plate", 1, 4, "consumable", "common"),
 	"reinforced steel plate" : Item("reinforced steel plate", 1, 6, "consumable", "rare"),
 	"diamond-steel plate" : Item("diamond-steel plate", 1, 9, "consumable", "legendary"),
+	"potato launcher" : Item("potato launcher", 1, 7, "weapon", "common"),
+	"plank" : Item("plank", 1, 6, "weapon", "common"),
+	"paintball gun" : Item("paintball gun", 1, 6, "weapon", "common"),
+	"box of nails" : Item("box of nails", 1, 4, "weapon", "common"),
+	"air fryer" : Item("air fryer", 1, 9, "weapon", "common"),
+	"shotgun" : Item("shotgun", 1, 9, "weapon", "rare"),
+	"harpoon launcher" : Item("harpoon launcher", 1, 12, "weapon", "rare"),
+	"brick catapult" : Item("brick catapult", 1, 11, "weapon", "rare"),
+	"spear" : Item("spear", 1, 13, "weapon", "rare"),
+	"sniper rifle" : Item("sniper rifle", 1, 15, "weapon", "epic"),
+	"minigun" : Item("minigun", 1, 18, "weapon", "epic"),
+	"flamethrower" : Item("flamethrower", 1, 16, "weapon", "epic"),
+	"lazer cannon" : Item("lazer cannon", 1, 20, "weapon", "legendary"),
+	"VMARPG" : Item("VMARPG", 1, 23, "weapon", "legendary"),
 }
 
 lootTable = {
@@ -176,7 +190,21 @@ lootTable = {
 	"advanced mechanics manual" : 4,
 	"steel plate" : 20,
 	"reinforced steel plate" : 7,
-	"diamond-steel plate" : 2
+	"diamond-steel plate" : 2,
+	"potato launcher" : 12,
+	"plank" : 11,
+	"paintball gun" : 12,
+	"box of nails" : 11,
+	"air fryer" : 10,
+	"shotgun" : 6,
+	"harpoon launcher" : 7,
+	"brick catapult" : 6,
+	"spear" : 5,
+	"sniper rifle" : 3,
+	"minigun" : 3,
+	"flamethrower" : 3,
+	"lazer cannon" : 1,
+	"VMARPG" : 1
 }
 
 weapons = {
@@ -207,7 +235,21 @@ itemDefinitions = {
 	"advanced mechanics manual" : "A highly in-depth mechanics manual, mostly for professionals. Gives 6 skill",
 	"steel plate" : "A basic steel plate. Gives your car an additional 5 hp",
 	"reinforced steel plate" : "A high-strength, heavy duty steel plate. Gives your car an additional 15 hp",
-	"diamond-steel plate" : "An over-the-top, rediculously strong steel plate. Gives your car an additional 45 hp"
+	"diamond-steel plate" : "An over-the-top, rediculously strong steel plate. Gives your car an additional 45 hp",
+	"potato launcher" : "An air-powered potato cannon. Damage: 3-5, Shots: 1, Hit chance: 75, Install skill: 5",
+	"plank" : "A piece of wood. Damage: 8-10, Shots: 1, Hit chance: 45, Install skill: 6",
+	"paintball gun" : "Very painful. Damage: 1-2, Shots: 8, Hit chance: 60, Install skill: 7",
+	"box of nails" : "Tetanus inducing grapeshot weapon. Damage: 1-2, Shots: 25, Hit chance: 10, Install skill: 8",
+	"air fryer" : "Cooks food using the air. Damage: 20-22, Shots: 1, Hit chance: 25, Install skill: 9",
+	"shotgun" : "Shoots projectiles in a large spread. Damage: 3-8, Shots: 7, Hit chance: 50, Install skill: 15",
+	"harpoon launcher" : "Fires a big'ol harpoon. Damage: 30-38, Shots: 1, Hit chance: 45, Install skill: 17",
+	"brick catapult" : "Launches many pain rectangles. Damage: 5-15, Shots: 3, Hit chance: 50, Install skill: 19",
+	"spear" : "A long-range stabby boi. Damage: 15-25, Shots: 1, Hit chance: 97, Install skill: 21",
+	"sniper rifle" : "Fires at enemies with extreme precision. Damage: 30-50, Shots: 1, Hit chance: 98, Install skill: 30",
+	"minigun" : "Agressively fast firearm. Damage: 2-10, Shots: 20, Hit chance: 55, Install skill: 33",
+	"flamethrower" : "THIS THING SHOOT FIRE!!!! Damage: 2-30, Shots: 3, Hit chance: 66, Install skill: 36",
+	"lazer cannon" : "Evaporates foes instantly. Damage: 1-3, Shots: 50, Hit chance: 75, Install skill: 50",
+	"VMARPG" : "Eradicates anything it hits. Damage: 100-250, Shots: 1, Hit chance: 15, Install skill: 60"
 }
 
 enemyWeaponChances = {
