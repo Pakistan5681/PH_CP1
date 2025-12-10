@@ -105,6 +105,9 @@ Return false
 """
 from random import randint, choice
 
+YELLOW = "\033[93m"
+RESET = "\033[0m"
+
 class Enemy:
 	def __init__(self, name, weaponOne, weaponTwo, weaponThree, health):
 		self.name = name
@@ -148,6 +151,19 @@ enemies = {}
 inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic"), Item("sniper rifle", 2, 15, "weapon", "epic"), Item("scrap", 15, 1, "scrap", "common")]
 equippedWeapons = ["none", "none", "none"]
 
+itemTable = {
+	"scrap" : Item("scrap", 1, 1, "scrap", "common"),
+	"advanced scrap" : Item("advanced scrap", 1, 3, "scrap", "legendary"),
+	"small gas canister" : Item("small gas canister", 1, 5, "consumable", "common"),
+	"medium gas canister" : Item("medium gas canister", 1, 10, "consumable", "rare"),
+	"large gas canister" : Item("large gas canister", 1, 15, "consumable", "epic"),
+	"beginner mechanics manual" : Item("beginner mechanics manual", 1, 3, "consumable", "common"),
+	"intermediate mechanics manual" : Item("intermediate mechanics manual", 1, 5, "consumable", "rare"),
+	"advanced mechanics manual" : Item("advanced mechanics manual", 1, 8, "consumable", "epic"),
+	"steel plate" : Item("steel plate", 1, 4, "consumable", "common"),
+	"reinforced steel plate" : Item("reinforced steel plate", 1, 6, "consumable", "rare"),
+	"diamond-steel plate" : Item("diamond-steel plate", 1, 9, "consumable", "legendary"),
+}
 
 lootTable = {
 	"scrap" : 30,
@@ -182,10 +198,16 @@ weapons = {
 
 itemDefinitions = {
 	"scrap" : "A jumble of scrap metal. Recovers three health points.",
-
-
-
-
+	"advanced scrap" : "A pile of extremely high-quality material. Recovers thirty health points",
+	"small gas canister" : "A little contaner of gas. Worth three gas points",
+	"medium gas canister" : "A decently sized container of gas. Worth seven gas points",
+	"large gas canister" : "An absolutely massive container of gas. Worth twelve gas points",
+	"beginner mechanics manual" : "A basic mechanics handbook. Gives one skill",
+	"intermediate mechanics manual" : "A more in-depth and advanced mechanics handbook. Gives 3 skill",
+	"advanced mechanics manual" : "A highly in-depth mechanics manual, mostly for professionals. Gives 6 skill",
+	"steel plate" : "A basic steel plate. Gives your car an additional 5 hp",
+	"reinforced steel plate" : "A high-strength, heavy duty steel plate. Gives your car an additional 15 hp",
+	"diamond-steel plate" : "An over-the-top, rediculously strong steel plate. Gives your car an additional 45 hp"
 }
 
 enemyWeaponChances = {
@@ -221,7 +243,7 @@ def randomBool(trueChance):
 	randomNum = randint(0, 100)
 	return randomNum <= trueChance
 
-def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances, playerPos, names):
+def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances, names):
 	world = {}
 	turns = {}
 	exits = {}
@@ -229,7 +251,7 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances,
 
 	for i in range(-worldWidth, worldWidth + 1):
 		for j in range(worldLength):
-			if randomBool(5):
+			if randomBool(100):
 				world[(j, i)] = "exit"
 				exits[(j, i)] = exit(parsedLootTable)
 			elif randomBool(5):
@@ -247,7 +269,7 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances,
 def exit(parsedLootTable):
 	newList = []
 	
-	for i in range(3):
+	for i in range(4):
 		localLoot = []
 		lootCount = randint(3, 7)
 		for i in range(lootCount):
@@ -278,7 +300,7 @@ def createEnemy(weaponList, distance, names):
 
 	return Enemy(name, weapOne, weapTwo, weapThree, health)
 
-world, exits, turns, enemies = worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances, playerPos, names)
+world, exits, turns, enemies = worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances, names)
 
 for i in enemies.keys():
 	print(f"{i} : {enemies[i]}")
@@ -289,14 +311,22 @@ def checkInventory(inventory):
 			inventory.remove(i)
 
 def itemDictionary(itemDefs):
-	while True:
-		itemToLookup = input("What item do you want to define")
+	global YELLOW
+	global RESET
 
-		while not itemToLookup in itemDefs.keys():
+	while True:
+		print(" ")
+		itemToLookup = input("What item do you want to define? Type the name of the item or 'quit' to exit ")
+
+		while not itemToLookup in itemDefs.keys() and itemToLookup != "quit":
 			print("That's not a real item")
 			itemToLookup = input("What item do you want to define")
 
-		print(f"{itemToLookup}: {itemDefs[itemToLookup]}")
+		if itemToLookup == 'quit':
+			break
+		
+		print(" ")
+		print(f"{YELLOW}{itemToLookup}: {itemDefs[itemToLookup]}{RESET}")
 
 
 def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits):
@@ -350,10 +380,14 @@ def DoExit(playerPos, playerRoad, exits, itemDefs):
 		print("What building do you want to loot")
 		loot = []
 
-		buildingToLoot = input("Pick options '1', '2', or '3'.")
+		buildingToLoot = input("Pick options '1', '2', or '3'. Type 'quit' to stop looting.")
 		while buildingToLoot != '1' and buildingToLoot != '2'and buildingToLoot != '3':
 			print("Invalid input")
-			buildingToLoot = input("Pick options '1', '2', or '3'.")
+			buildingToLoot = input("Pick options '1', '2', or '3'. Type 'quit' to stop looting.")
+
+		if buildingToLoot == "quit":
+			break
+
 		buildingToLoot = int(buildingToLoot)
 
 		for i in exit[buildingToLoot]:
@@ -365,16 +399,38 @@ def DoExit(playerPos, playerRoad, exits, itemDefs):
 
 			while not itemToGrab in loot and itemToGrab != "quit" and itemToGrab != "def":
 				print("That item is not there")
-				itemToUse = input("What item do you want to grab? Type the name of the item or 'quit' to exit. \nType 'def' to open the item definiton menu  ")
+				itemToGrab = input("What item do you want to grab? Type the name of the item or 'quit' to exit. \nType 'def' to open the item definiton menu  ")
 
 			if itemToGrab == "quit":
-				pass
+				break
 			elif itemToGrab == "def":
 				itemDictionary(itemDefs)
+				print(" ")
+				for i in loot:
+					print(f"There is a(n) {i}")
+			else:
+				print(" ")
+				print(f"You grab the {itemToGrab}")
+				exit[buildingToLoot].remove(itemToGrab)
+				loot.remove(itemToGrab)
+				print(" ")
 
-			break
+				for i in loot:
+					print(f"There is a(n) {i}")
 
-		break
+
+def addToInventory(inventory, item):
+	inInventory = False
+	index = 0
+	for i in inventory:
+		if i.name == item:
+			inInventory = True
+			index = inventory.index(i)
+
+	if inInventory:
+		inventory[index].amount += 1
+
+
 
 def DoTurn():
 	pass
