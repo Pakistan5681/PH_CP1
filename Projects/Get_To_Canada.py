@@ -105,7 +105,12 @@ Return false
 """
 from random import randint, choice
 
-YELLOW = "\033[93m"
+RED = '\033[31m'
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
+BLUE = '\033[34m'
+PURPLE = '\033[35m'
+WHITE = '\033[37m'
 RESET = "\033[0m"
 
 class Enemy:
@@ -416,6 +421,13 @@ def DoCombat():
 	pass
 
 def DoExit(playerPos, playerRoad, exits, itemDefs):
+	global itemTable
+	global YELLOW
+	global BLUE
+	global RED
+	global RESET
+	global WHITE
+
 	exit = exits[playerPos, playerRoad]
 
 	while True:
@@ -433,7 +445,11 @@ def DoExit(playerPos, playerRoad, exits, itemDefs):
 		buildingToLoot = int(buildingToLoot)
 
 		for i in exit[buildingToLoot]:
-			print(f"There is a(n) {i}")
+			if itemTable[i].rarity == "rare": color = BLUE 
+			elif itemTable[i].rarity == "epic": color = PURPLE 
+			elif itemTable[i].rarity == "legendary": color = YELLOW 
+			else: color = WHITE
+			print(f"{color}There is a(n) {i}{RESET}")
 			loot.append(i)
 
 		while True:
@@ -447,9 +463,14 @@ def DoExit(playerPos, playerRoad, exits, itemDefs):
 				break
 			elif itemToGrab == "def":
 				itemDictionary(itemDefs)
-				print(" ")
+				print("")
+				color = ""
 				for i in loot:
-					print(f"There is a(n) {i}")
+					if itemTable[i].rarity == "rare": color = BLUE 
+					elif itemTable[i].rarity == "epic": color = PURPLE 
+					elif itemTable[i].rarity == "legendary": color = YELLOW 
+					else: color = WHITE
+					print(f"{color}There is a(n) {i}{RESET}")
 			else:
 				print(" ")
 				print(f"You grab the {itemToGrab}")
@@ -458,7 +479,11 @@ def DoExit(playerPos, playerRoad, exits, itemDefs):
 				print(" ")
 
 				for i in loot:
-					print(f"There is a(n) {i}")
+					if itemTable[i].rarity == "rare": color = BLUE 
+					elif itemTable[i].rarity == "epic": color = PURPLE 
+					elif itemTable[i].rarity == "legendary": color = YELLOW 
+					else: color = WHITE
+					print(f"{color}There is a(n) {i}{RESET}")
 
 
 def addToInventory(inventory, item):
