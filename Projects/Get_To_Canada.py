@@ -14,6 +14,7 @@ Return total damage
 		
 """
 from random import randint, choice
+from time import sleep
 
 RED = '\033[31m'
 GREEN = '\033[32m'
@@ -324,13 +325,13 @@ def createEnemy(easyList, mediumList, hardList, insaneList, distance, names):
 
 world, exits, turns, enemies = worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChancesEasy, parsedEnemyWeaponChancesMedium, parsedEnemyWeaponChancesHard, parsedEnemyWeaponChancesInsane, names)
 
-for i in enemies.keys():
-	print(f"{i} : {enemies[i]}")
-
 def checkInventory(inventory):
 	for i in inventory:
 		if i.amount <= 0:
 			inventory.remove(i)
+			print(f"Removing {i.name}")
+
+	return inventory
 
 def itemDictionary(itemDefs):
 	global YELLOW
@@ -352,17 +353,40 @@ def itemDictionary(itemDefs):
 
 
 def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable):
+	sleep(1)
 	print(" ")
 	print(f"You are now at mile {playerPos * 10}")
+
+	global RED
+	global RESET
+	global YELLOW
 
 	itemInput = input("Do you want to look at your inventory? ")
 			
 	while itemInput != "yes" and itemInput != "no" :
 		print("Invalid answer")
 		itemInput = input("Do you want to look at your inventory? " )
-		if itemInput == "yes":
-			for i in inventory:
-				print(f"You have {i.amount} {i.name}(s)")
+
+	if itemInput == "yes":
+		for i in inventory:				
+			print(f"You have {i.amount} {i.name}(s)")
+
+		print(" ")
+
+	itemInput = input("Do you want to look at your equipped weapons? ")
+			
+	while itemInput != "yes" and itemInput != "no" :
+		print("Invalid answer")
+		itemInput = input("Do you want to look at your equipped weapons? " )
+
+	if itemInput == "yes":
+		print(" ")
+		for i in range(len(equippedWeapons)):	
+			if equippedWeapons[i] != "none":
+				print(f"You have a(n) {equippedWeapons[i]} equipped in slot {i + 1}")
+			else:
+				print(f"You have nothing equipped in slot {i}")
+		print(" ")
 	
 	if world[(playerPos, playerRoad)] == "empty":
 		if enemies[(playerPos, playerRoad)] == "empty":
@@ -396,15 +420,29 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 				playerPos += 1
 				if inventory == None:
 					inventory = []
+				print("You continue driving")
 				return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable
 		else:
+			print(f"{RED}You encounter an enemy!{RESET}")
+			sleep(1)
 			DoCombat(enemies[(playerPos,playerRoad)], health, maxHealth, equippedWeapons, weaponDict, playerPos, playerRoad, enemies)
+			playerPos += 1
+			if inventory == None:
+				inventory = []
+			print("You continue driving")
+			return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable
 
 	elif world[(playerPos, playerRoad)] == "exit":
-		print("You reach an exit")
+		print(f"{YELLOW}You reach an exit{RESET}")
 		inventory, exits = DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory)
 	elif world[(playerPos, playerRoad)] == "turn":
 		DoTurn()
+
+	playerPos += 1
+	if inventory == None:
+		inventory = []
+	print("You continue driving")
+	return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable
 
 def calcWeaponDamage(name, weaponDict):
 	totalDamage = 0
@@ -426,17 +464,22 @@ def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, pl
 	enemyWeapons = [enemy.weaponOne, enemy.weaponTwo, enemy.weaponThree]
 	print(f"You are fighting a {enemy.name}")
 
+	print(" ")
+
 	for i in enemyWeapons:
 		print(f"It has a(n) {i}")
 	
 	while True:
+		print(" ")
 		repairInput = input("Do you want to make repairs? 'yes' or 'no'. ")
-		while repairInput != "yes" and repairInput != "no":
-			print("That input is invalid")
-			repairInput = input("Do you want to make repairs? 'yes' or 'no'. ")
 
-		if repairInput == "yes":
-			makeRepairs(inventory, health, maxHealth)
+		if health < maxHealth:
+			while repairInput != "yes" and repairInput != "no":
+				print("That input is invalid")
+				repairInput = input("Do you want to make repairs? 'yes' or 'no'. ")
+
+			if repairInput == "yes":
+				makeRepairs(inventory, health, maxHealth)
 
 		attackInput = input("Do you want to 'attack' or 'dodge'? ")
 		while attackInput != "attack" and attackInput != "dodge":
@@ -488,6 +531,7 @@ def DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory):
 	exit = exits[playerPos, playerRoad]
 
 	while True:
+		print(" ")
 		print("What building do you want to loot")
 		loot = []
 
@@ -566,9 +610,12 @@ def DoTurn():
 def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 	
 	while True:
+		print(" ")
+
 		if inventory == None:
 			print("your inventory is empty")
 			return gas, mechanicsSkill, inventory, health, maxHealth
+		
 		items = {}
 		nameIndex = {}
 		for i in inventory:
@@ -576,12 +623,18 @@ def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 				items[i.name] = i
 				print(f"You have {i.amount} {i.name}(s)")
 
-			nameIndex[i.name] = inventory.index(i)
+		if len(items) == 0:
+			print("You have no useable items")
+			return gas, mechanicsSkill, inventory, health, maxHealth
+
+		nameIndex[i.name] = inventory.index(i)
 		itemToUse = input("What item do you want to use? Type the name of the item or 'quit' to exit: ")
 
 		while not itemToUse in items.keys() and itemToUse != "quit":
 			print("You do not have that item")
 			itemToUse = input("What item do you want to use? Type the name of the item or 'quit' to exit: ")
+
+		print(" ")
 
 		if itemToUse != "quit": print(f"You use the {itemToUse}")
 
@@ -651,7 +704,7 @@ def makeRepairs(inventory, health, maxHealth):
 		items = {}
 		nameIndex = {}
 
-		if inventory== None:
+		if inventory == None:
 			print("Your inventory is empty")
 			return inventory, health
 
@@ -692,6 +745,8 @@ def modCar(inventory, equippedWeapons):
 		items = {}
 		nameIndex = {}
 
+		print(" ")
+
 		if inventory== None:
 			print("Your inventory is empty")
 			return inventory, equippedWeapons
@@ -722,16 +777,18 @@ def modCar(inventory, equippedWeapons):
 			print("Invalid slot")
 			slot = input("Type '1', '2', or '3'")
 			
-		if equippedWeapons[int(slot)] == "none":
-			equippedWeapons[int(slot)] = weaponToEquip
+		print(" ")
+
+		if equippedWeapons[int(slot) - 1] == "none":
+			equippedWeapons[int(slot) - 1] = weaponToEquip
 			print(f"{weaponToEquip} equipped to slot {slot}")
 			inventory[nameIndex[weaponToEquip]].amount -= 1
 		else:
-			print(f"You already have a(n) {equippedWeapons[int(slot)]} attached to slot {slot}")
+			print(f"You already have a(n) {equippedWeapons[int(slot) - 1]} attached to slot {slot}")
 			yesNo = input("Do you want to replace it? 'yes' or 'no'? ")
 			while yesNo != "yes" and yesNo != "no":
 				print("Invalid answer")
-				yesNo = input(f"Do you want to replace the {equippedWeapons[int(slot)]}? 'yes' or 'no'? ")
+				yesNo = input(f"Do you want to replace the {equippedWeapons[int(slot) - 1]}? 'yes' or 'no'? ")
 
 			if yesNo == "yes":
 				equippedWeapons[int(slot)] =  weaponToEquip
