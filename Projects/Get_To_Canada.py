@@ -1,50 +1,5 @@
 """Call variables
 
-Worldpos is an int that holds how far along you are (kind of like y pos) 
-
-Weapons is a dictionary that pairs weapon names with stats (weaponStats is a class)
-
-Enemies is a dictionary that matches worldPos (x, y) with enemies (which is a class)
-
-PlayerWeapons is a list of the names of all the player’s weapons
-
-LootTable is a dictionary with every item in the game in order of rarity with weights (scrap : 10, gas : 5, potato_launcher : 3, basic_mechanics_manual : 2…)
-
-ParsedLootTable is a list created from a loot table. Every item (key) is added weight (value) of times. This means that “scrap” will be in the list ten times, “gas” five times etc
-
-currentRoad is the road the player is on (kind of like x pos)
-
-All dictionaries take in (worldpos, currentRoad) for playerPos
-
-There are many roads: The i-35 and (worldWidth * 2) sub roads
-
-World is a dictionary (structured int location : dict road) that contains roads, which in turn are also dictionaries structured worldPos : (“empty”, “exit”, or “turn”) ex [3, 2] : “turn”
-
-Turns is a dictionary of all the turns. Each of them contains [worldPos, road] : direction. Every time a turn is created, it gets added to this list  (ex (5, 2) : -1)
-
-Exits is a dictionary structured the same as turns, except the value is a list of loot (which is a class).
-
-Loot is a class structured: int amount, string name, string type, string rarity, float weight
-
-Inventory is a list of item classes. Each item is (name, amount, weight, type, rarity)
-	
-
-Function Turn(param worldpos, param playerRoad)
-	bool equals randomBool(arg 50)
-
-	If bool is greater than 50:
-		If playerRoad is not <= -2
-			turnDirection = “left”
-			Turn[(worldpos, playerRoad)] = -1
-		
-	Else 
-If playerRoad is not >= 2
-turnDirection = “right”
-			Turn[(worldpos, playerRoad)] = 1
-
-    Return turn
-	
-
 Function CalcWeaponDamage(hitchance, hitCount, damageMin, damageMax, name)
 	totalDamage = 0
 Hitcount = 0
@@ -57,51 +12,6 @@ hitCount += 1
 	print(The name hit hitcount times and dealt totalDamage damage)
 Return total damage
 		
-
-Function DoCombat(playerpos, playerroad)
-Enemy = enemies[(playerpos, playerroad)]
-
-enemyWeapons= Enemy.weapons both are lists
-
-Ask player if they want to repair their car
-
-If player wants to make repairs 
-	DoRepairs
-
-Ask player if they want to attack or dodge
-
-If player wants to attack
-totalDamage = 0
-	Loop i in playerWeapons
-		Weapon = weapons[i]
-		totalDamage += calcDamage(weapon)
-
-	Enemy.health -= totalDamage
-
-	If enemyHealth is greater than 0
-		Tell player enemy health
-	Else
-		Tell player enemy is dead
-		enemies[(playerPos, playerRoad)] = “empty”
-		Return true
-
-If player wants to dodge
-	Return false
-
-enemyDamage = 0
-
-Loop i in enemyWeapons
-	Weapon = weapons[i]
-	totalDamage += calcDamage(weapon)
-
-playerHealth -= damage
-Tell player all the stats
-Return false
-
-
-
-
-
 """
 from random import randint, choice
 
@@ -142,8 +52,8 @@ worldLength = 100
 playerPos = 0
 playerRoad = 0
 
-carHealth = 10
-maxHealth = 20
+carHealth = 30
+maxHealth = 30
 gas = 30
 maxGas = 30
 mechanicsSkill = 5
@@ -154,7 +64,7 @@ turns = {}
 enemies = {}
 
 inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic"), Item("sniper rifle", 2, 15, "weapon", "epic"), Item("scrap", 15, 1, "scrap", "common")]
-equippedWeapons = ["none", "none", "none"]
+equippedWeapons = ["potato launcher", "none", "none"]
 
 itemTable = {
 	"scrap" : Item("scrap", 1, 1, "scrap", "common"),
@@ -226,7 +136,7 @@ weapons = {
 	"minigun" : Weapon(2, 10, 20, 55, 33),
 	"flamethrower" : Weapon(2, 30, 3, 66, 36),
 	"lazer cannon" : Weapon(1, 3, 50, 75, 50),
-	"VMARPG" : Weapon(100, 250, 1, 15, 60),
+	"VMARPG" : Weapon(100, 250, 1, 15, 60)
 }
 
 itemDefinitions = {
@@ -257,12 +167,35 @@ itemDefinitions = {
 	"VMARPG" : "Eradicates anything it hits. Damage: 100-250, Shots: 1, Hit chance: 15, Install skill: 60"
 }
 
-enemyWeaponChances = {
-	"potato launcher" : 20,
+enemyWeaponChancesEasy = {
+	"potato launcher" : 25,
 	"plank" : 20,
-	"paintball gun" : 20,
-	"box of nails" : 20,
-	"air fryer" : 20,
+	"paintball gun" : 10,
+	"box of nails" : 15,
+	"air fryer" : 10,
+}
+
+enemyWeaponChancesMedium = {
+	"potato launcher" : 10,
+	"plank" : 10,
+	"paintball gun" : 10,
+	"box of nails" : 10,
+	"air fryer" : 10,
+	"shotgun" : 10,
+	"harpoon launcher" : 7,
+	"brick catapult" : 7,
+	"spear" : 7,
+	"sniper rifle" : 2,
+	"minigun" : 2,
+	"flamethrower" : 2,
+}
+
+enemyWeaponChancesHard = {
+	"potato launcher" : 5,
+	"plank" : 5,
+	"paintball gun" : 5,
+	"box of nails" : 5,
+	"air fryer" : 5,
 	"shotgun" : 10,
 	"harpoon launcher" : 10,
 	"brick catapult" : 10,
@@ -274,12 +207,40 @@ enemyWeaponChances = {
 	"VMARPG" : 2,
 }
 
+enemyWeaponChancesInsane = {
+	"shotgun" : 5,
+	"harpoon launcher" : 5,
+	"brick catapult" : 5,
+	"spear" : 5,
+	"sniper rifle" : 10,
+	"minigun" : 10,
+	"flamethrower" : 10,
+	"lazer cannon" : 5,
+	"VMARPG" : 5,
+}
+
 names = ["Tesla Model X"]
 
-parsedEnemyWeaponChances = []
-for i in enemyWeaponChances.keys():
-	for j in range(enemyWeaponChances[i]):
-		parsedEnemyWeaponChances.append(i)
+parsedEnemyWeaponChancesEasy = []
+parsedEnemyWeaponChancesMedium = []
+parsedEnemyWeaponChancesHard = []
+parsedEnemyWeaponChancesInsane = []
+
+for i in enemyWeaponChancesEasy.keys():
+	for j in range(enemyWeaponChancesEasy[i]):
+		parsedEnemyWeaponChancesEasy.append(i)
+
+for i in enemyWeaponChancesMedium.keys():
+	for j in range(enemyWeaponChancesMedium[i]):
+		parsedEnemyWeaponChancesMedium.append(i)
+
+for i in enemyWeaponChancesHard.keys():
+	for j in range(enemyWeaponChancesHard[i]):
+		parsedEnemyWeaponChancesHard.append(i)
+
+for i in enemyWeaponChancesInsane.keys():
+	for j in range(enemyWeaponChancesInsane[i]):
+		parsedEnemyWeaponChancesInsane.append(i)
 
 parsedLootTable = []
 for i in lootTable.keys():
@@ -298,7 +259,7 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances,
 
 	for i in range(-worldWidth, worldWidth + 1):
 		for j in range(worldLength):
-			if randomBool(100):
+			if randomBool(5):
 				world[(j, i)] = "exit"
 				exits[(j, i)] = exit(parsedLootTable)
 			elif randomBool(5):
@@ -306,7 +267,7 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChances,
 				turns[(j, i)] = turn(i, worldWidth)
 			else:
 				world[(j, i)] = "empty"
-				if randomBool(10):
+				if randomBool(100):
 					enemies[(j, i)] = createEnemy(parsedEnemyWeaponChances, j, names)
 				else:
 					enemies[(j, i)] = "empty"
@@ -338,11 +299,12 @@ def turn(turns, worldWidth) :
 	moveOut = turns + number
 	return moveOut 
 
-def createEnemy(weaponList, distance, names):
-	weapOne = choice(weaponList)
-	weapTwo = choice(weaponList)
-	weapThree = choice(weaponList)
-	health = randint(1, 3) * (distance + 1)
+def createEnemy(easyList, mediumList, hardList, insaneList, distance, names):
+	if distance < 25:
+		weapOne = choice(easyList)
+		weapTwo = choice(easyList)
+		weapThree = choice(weaponList)
+	health = randint(1, 3) * (distance + 999)
 	name = choice(names)
 
 	return Enemy(name, weapOne, weapTwo, weapThree, health)
@@ -376,7 +338,7 @@ def itemDictionary(itemDefs):
 		print(f"{YELLOW}{itemToLookup}: {itemDefs[itemToLookup]}{RESET}")
 
 
-def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits):
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict):
 	if world[(playerPos, playerRoad)] == "empty":
 		if enemies[(playerPos, playerRoad)] == "empty":
 
@@ -409,16 +371,80 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 				playerPos += 1
 				return gas, mechanicsSkill, inventory, health, maxHealth
 		else:
-			while True:
-				if DoCombat(enemies[(playerPos,playerRoad)]):
-					break
+			DoCombat(enemies[(playerPos,playerRoad)], health, maxHealth, equippedWeapons, weaponDict, playerPos, playerRoad, enemies)
+
 	elif world[(playerPos, playerRoad)] == "exit":
 		DoExit(playerPos, playerRoad, exits, itemDefs)
 	elif world[(playerPos, playerRoad)] == "turn":
 		DoTurn()
+
+def calcWeaponDamage(name, weaponDict):
+	totalDamage = 0
+	weapon = weaponDict[name]
+
+	hitCount = 0
+	for i in range(weapon.shots):
+		if randomBool(weapon.hitChance):
+			damage = randint(weapon.damageMin, weapon.damageMax)
+			hitCount += 1
+			totalDamage += damage
+
+
+	print(f"The {name} hit {hitCount} times and dealt {totalDamage} damage")
+	return totalDamage
+		
 	
-def DoCombat():
-	pass
+def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, playerRoad, enemyDict): # the bool returned is telling playerTurn if the player is dead or not
+	while True:
+		enemyWeapons = [enemy.weaponOne, enemy.weaponTwo, enemy.weaponThree]
+		print(f"You are fighting a {enemy.name}")
+		repairInput = input("Do you want to make repairs? 'yes' or 'no'. ")
+		while repairInput != "yes" and repairInput != "no":
+			print("That input is invalid")
+			repairInput = input("Do you want to make repairs? 'yes' or 'no'. ")
+
+		if repairInput == "yes":
+			makeRepairs(inventory, health, maxHealth)
+
+		attackInput = input("Do you want to 'attack' or 'dodge'? ")
+		while attackInput != "attack" and attackInput != "dodge":
+			print("That input is invalid")
+			attackInput = input("Do you want to 'attack' or 'dodge'? ")
+
+		if attackInput == "attack":
+			totalDamage = 0
+			for i in playerWeapons:
+				if i != "none":
+					weapon = weaponTable[i]
+					totalDamage += calcWeaponDamage(i, weaponTable)
+
+			enemy.health -= totalDamage
+			print(f"You dealt {totalDamage} damage")
+
+			if enemy.health > 0:
+				print(f"The {enemy.name} now has {enemy.health} HP")
+			else:
+				print(f"You killed the {enemy.name}")
+				enemies[(playerPos, playerRoad)] = "empty" 
+				return health, enemyDict, False
+		else:
+			print("You avoid the enemies attack")
+			continue
+
+		enemyDamage = 0
+
+		for i in enemyWeapons:
+			weapon = weaponTable[i]
+			enemyDamage += calcWeaponDamage(i, weaponTable)
+
+		health -= enemyDamage
+		print(f"The {enemy.name} did {enemyDamage} damage")
+
+		if health > 0:
+			print(f"You now have {health} HP")
+		else:
+			print("You died")
+			return health, enemyDict, True
 
 def DoExit(playerPos, playerRoad, exits, itemDefs):
 	global itemTable
@@ -496,7 +522,6 @@ def addToInventory(inventory, item):
 
 	if inInventory:
 		inventory[index].amount += 1
-
 
 
 def DoTurn():
@@ -678,4 +703,4 @@ def modCar(inventory, equippedWeapons):
 
 		inventory = checkInventory(inventory)
 
-PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits)
+PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits, weapons)
