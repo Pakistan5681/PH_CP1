@@ -612,8 +612,7 @@ def DoTurn(playerPos, playerRoad, turns):
 	if playerRoad != 0: print(f"You move to subroad {playerRoad}")
 	else: print("You are back on the i-35")
 
-def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
-	
+def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):	
 	while True:
 		print(" ")
 
@@ -876,11 +875,12 @@ def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkil
 
 	while tutInput != "use item":
 		print("You shouldn't leave on a half full tank")
-		tutInput = input("Type 'use item' to use the gas canister")
+		tutInput = input("Type 'use item' to use the gas canister ")
 
 	gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+	print(f"Gas: {gas}")
 
-	while gas != 30:
+	while gas < 30:
 		print(" ")
 		print("You shouldn't leave on a half full tank")
 		sleep(2)
@@ -922,13 +922,14 @@ def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkil
 
 	gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
 
-	while gas != 30:
+	while True:
 		print(" ")
+		print("gas =" + gas)
 		print("You shouldn't leave on a half full tank")
 		sleep(2)
 		gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
-
-Tutorial(inventory, itemTable, carHealth, maxHealth)
+		
+Tutorial(inventory, itemTable, carHealth, maxHealth, gas, maxGas, mechanicsSkill)
 while True:
 	world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, cont = PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits, weapons, itemTable, turns)
 	if not cont:
