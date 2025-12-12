@@ -23,6 +23,7 @@ class Weapon:
 		self.damageMax = damageMax
 		self.shots = shots
 		self.hitChance = hitChance
+		self.installSkill = installSkill
 
 class Item:
 	def __init__(self, name, amount, weight, type, rarity):
@@ -40,16 +41,16 @@ playerRoad = 0
 
 carHealth = 27
 maxHealth = 30
-gas = 30
+gas = 27
 maxGas = 30
-mechanicsSkill = 5
+mechanicsSkill = 4
 
 world = {}
 exits = {}
 turns = {}
 enemies = {}
 
-inventory = [Item("advanced mechanics manual", 1, 6, "consumable", "epic"), Item("sniper rifle", 2, 15, "weapon", "epic"), Item("scrap", 15, 1, "scrap", "common")]
+inventory = [Item("VMARPG", 1, 23, "weapon", "legendary")]
 equippedWeapons = ["potato launcher", "none", "none"]
 
 itemTable = {
@@ -245,15 +246,15 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChancesE
 
 	for i in range(-worldWidth, worldWidth + 1):
 		for j in range(worldLength):
-			if randomBool(0):
+			if randomBool(20):
 				world[(j, i)] = "exit"
 				exits[(j, i)] = exit(parsedLootTable)
-			elif randomBool(100):
+			elif randomBool(20):
 				world[(j, i)] = "turn"
 				turns[(j, i)] = turn(i, worldWidth)
 			else:
 				world[(j, i)] = "empty"
-				if randomBool(25):
+				if randomBool(20):
 					enemies[(j, i)] = createEnemy(parsedEnemyWeaponChancesEasy, parsedEnemyWeaponChancesMedium, parsedEnemyWeaponChancesHard, parsedEnemyWeaponChancesInsane, j, names)
 				else:
 					enemies[(j, i)] = "empty"
@@ -402,7 +403,7 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 				print("Invalid answer")
 				itemInput = input("Do you want to modify your car? " )
 			if itemInput == "yes":
-				inventory, equippedWeapons = modCar(inventory,equippedWeapons)
+				inventory, equippedWeapons = modCar(inventory, equippedWeapons, weaponDict, mechanicsSkill)
 			else:
 				playerPos += 1
 				if inventory == None:
@@ -744,7 +745,9 @@ def makeRepairs(inventory, health, maxHealth):
 
 		inventory = checkInventory(inventory)
 
-def modCar(inventory, equippedWeapons):
+def modCar(inventory, equippedWeapons, weaponTable, mechanicsSkill):
+	global BLUE
+	global RESET
 	while True:
 		items = {}
 		nameIndex = {}
@@ -773,6 +776,12 @@ def modCar(inventory, equippedWeapons):
 
 		if weaponToEquip == "quit":
 			return inventory, equippedWeapons
+		
+		if weaponTable[weaponToEquip].installSkill > mechanicsSkill:
+			print(" ")
+			print(f"You dont have enough skill to install the {weaponToEquip}")
+			print(f"You need {BLUE}{weaponTable[weaponToEquip].installSkill}{RESET} skill, but you only have {BLUE}{mechanicsSkill}{RESET}")
+			continue
 
 		print(f"What slot do you want to attach the {weaponToEquip} to?")
 		slot = input("Type '1', '2', or '3'")
@@ -800,7 +809,7 @@ def modCar(inventory, equippedWeapons):
 
 		inventory = checkInventory(inventory)
 
-def Tutorial(inventory, itemTable, health, maxHealth):
+def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkill):
 	global RED
 	global RESET
 	print(f"{RED}You need to get out of here...{RESET}")
@@ -852,15 +861,72 @@ def Tutorial(inventory, itemTable, health, maxHealth):
 
 	while tutInput != "make repairs":
 		tutInput = input("No, you need to type 'make repairs'. You should have a repaired car before going out. ")
-
 		
-	health = makeRepairs(inventory, health, maxHealth)
+	inventory, health = makeRepairs(inventory, health, maxHealth)
 
 	while health != 30:
 		print(" ")
 		print("You were supposed to use the scrap.")
 		sleep(2)
-		health = makeRepairs(inventory, health, maxHealth)
+		inventory, health = makeRepairs(inventory, health, maxHealth)
+
+	print(" ")
+	print("You realize that your fuel tank is also not full. Use the gas canister to refuel")
+	tutInput = input("Type 'use item' to use the gas canister")
+
+	while tutInput != "use item":
+		print("You shouldn't leave on a half full tank")
+		tutInput = input("Type 'use item' to use the gas canister")
+
+	gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+
+	while gas != 30:
+		print(" ")
+		print("You shouldn't leave on a half full tank")
+		sleep(2)
+		gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+
+	print(" ")
+	sleep(2)
+	print("Grab the beginner mechanics manual. It will likely be useful.")
+
+	tutInput = input("Type 'beginner mechanics manual' to grab it ")
+	while tutInput != "beginner mechanics manual":
+		tutInput = input("No, you need to type 'small gas canister'. It will be good to have. ")
+
+	AddItem(inventory, "beginner mechanics manual", itemTable)
+	print("You grab the beginner mechanics manual")
+	print(" ")
+	sleep(2)
+
+	print("Now for the final step. You need to defend yourself.")
+
+	tutInput = input("Type 'potato launcher' to grab it ")
+	while tutInput != "potato launcher":
+		tutInput = input("No, you need to type 'potato launcher'. You need to be able to fight back. ")
+
+	AddItem(inventory, "potato launcher", itemTable)
+	print("You grab the potato launcher")
+	print(" ")
+	sleep(2)
+
+	print("After some closer examination, you relize you dont know how to install it")
+	print("Your mechanics skill is too low.")
+	print("You can use the mechanics manual to increase your skill from four to five")
+
+	tutInput = input("Type 'use item' to use the mechanics manual")
+
+	while tutInput != "use item":
+		print("You need to know how to equip the potato launcher")
+		tutInput = input("Type 'use item' to use the mechanics manual")
+
+	gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+
+	while gas != 30:
+		print(" ")
+		print("You shouldn't leave on a half full tank")
+		sleep(2)
+		gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
 
 Tutorial(inventory, itemTable, carHealth, maxHealth)
 while True:
