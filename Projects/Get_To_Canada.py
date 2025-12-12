@@ -1,18 +1,3 @@
-"""Call variables
-
-Function CalcWeaponDamage(hitchance, hitCount, damageMin, damageMax, name)
-	totalDamage = 0
-Hitcount = 0
-	Loop i in hitcount
-		If randombool with arg hitchance
-			Damage = randint(damageMin, damageMax)
-hitCount += 1	
-			totalDamage += damage
-
-	print(The name hit hitcount times and dealt totalDamage damage)
-Return total damage
-		
-"""
 from random import randint, choice
 from time import sleep
 
@@ -48,12 +33,12 @@ class Item:
 		self.rarity = rarity
 
 worldWidth = 3
-worldLength = 100
+worldLength = 20
 
 playerPos = 0
 playerRoad = 0
 
-carHealth = 30
+carHealth = 27
 maxHealth = 30
 gas = 30
 maxGas = 30
@@ -260,15 +245,15 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChancesE
 
 	for i in range(-worldWidth, worldWidth + 1):
 		for j in range(worldLength):
-			if randomBool(10):
+			if randomBool(0):
 				world[(j, i)] = "exit"
 				exits[(j, i)] = exit(parsedLootTable)
-			elif randomBool(5):
+			elif randomBool(100):
 				world[(j, i)] = "turn"
 				turns[(j, i)] = turn(i, worldWidth)
 			else:
 				world[(j, i)] = "empty"
-				if randomBool(10):
+				if randomBool(25):
 					enemies[(j, i)] = createEnemy(parsedEnemyWeaponChancesEasy, parsedEnemyWeaponChancesMedium, parsedEnemyWeaponChancesHard, parsedEnemyWeaponChancesInsane, j, names)
 				else:
 					enemies[(j, i)] = "empty"
@@ -318,7 +303,7 @@ def createEnemy(easyList, mediumList, hardList, insaneList, distance, names):
 		weapTwo = choice(insaneList)
 		weapThree = choice(insaneList)
 
-	health = randint(1, 3) * (distance + 1)
+	health = randint(1, 5) * (distance + 1)
 	name = choice(names)
 
 	return Enemy(name, weapOne, weapTwo, weapThree, health)
@@ -352,10 +337,12 @@ def itemDictionary(itemDefs):
 		print(f"{YELLOW}{itemToLookup}: {itemDefs[itemToLookup]}{RESET}")
 
 
-def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable):
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, turns):
 	sleep(1)
+	gas -= 2
 	print(" ")
 	print(f"You are now at mile {playerPos * 10}")
+	print(f"You have {gas} liters of gas remaining")
 
 	global RED
 	global RESET
@@ -425,24 +412,33 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 		else:
 			print(f"{RED}You encounter an enemy!{RESET}")
 			sleep(1)
-			DoCombat(enemies[(playerPos,playerRoad)], health, maxHealth, equippedWeapons, weaponDict, playerPos, playerRoad, enemies)
+			health, enemies, cont = DoCombat(enemies[(playerPos,playerRoad)], health, maxHealth, equippedWeapons, weaponDict, playerPos, playerRoad, enemies)
 			playerPos += 1
 			if inventory == None:
 				inventory = []
-			print("You continue driving")
-			return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable
+			if cont == False: print("You continue driving")
+			return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, not cont
 
 	elif world[(playerPos, playerRoad)] == "exit":
 		print(f"{YELLOW}You reach an exit{RESET}")
 		inventory, exits = DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory)
 	elif world[(playerPos, playerRoad)] == "turn":
-		DoTurn()
+		print(" ")
+		print("You reached a turn")
+
+		turnInput = input(f"Do you want to turn to road {turns[(playerPos, playerRoad)]}?")
+
+		while turnInput != "yes" and turnInput != "no":
+			print("That input is invalid")
+			turnInput = input(f"Do you want to turn to road {turns[(playerPos, playerRoad)]}?")
+
+		if turnInput == "yes": DoTurn(playerPos, playerRoad, turns)
 
 	playerPos += 1
 	if inventory == None:
 		inventory = []
 	print("You continue driving")
-	return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable
+	return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, True
 
 def calcWeaponDamage(name, weaponDict):
 	totalDamage = 0
@@ -505,6 +501,11 @@ def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, pl
 		else:
 			print("You avoid the enemies attack")
 			continue
+
+		sleep(2)
+		print(" ")
+		print("The enemy is attacking!")
+		print(" ")
 
 		enemyDamage = 0
 
@@ -604,8 +605,11 @@ def AddItem(inventory, name, itemTable):
 
 	return inventory
 
-def DoTurn():
-	pass
+def DoTurn(playerPos, playerRoad, turns):
+	playerRoad = turns[(playerPos, playerRoad)]
+
+	if playerRoad != 0: print(f"You move to subroad {playerRoad}")
+	else: print("You are back on the i-35")
 
 def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 	
@@ -796,5 +800,71 @@ def modCar(inventory, equippedWeapons):
 
 		inventory = checkInventory(inventory)
 
+def Tutorial(inventory, itemTable, health, maxHealth):
+	global RED
+	global RESET
+	print(f"{RED}You need to get out of here...{RESET}")
+	sleep(2)
+	print(f"{RED}It's not safe anymore...{RESET}")
+	sleep(2)
+
+	print("All newer cars have become sentient and murderous. This happened worldwide.")
+	sleep(2)
+	print("You live in Laredo, Texas, and you own a crusty 2003 Chrysler PT that did not become sentient")
+	sleep(2)
+	print("As far as you know, you are the last American alive.")
+	sleep(2)
+	print("You learn that Canada is the last remaining stronghold against the cars")
+	sleep(2)
+	print("It will be a long drive, but you have a couple tricks up your sleeve to help you survive")
+	sleep(2)
+	print(" ")
+	print("First you need to grab some supplies. You enter the garage.")
+
+	loot = ["potato launcher", "scrap", "small gas canister", "beginner mechanics manual"]
+
+	for i in loot:
+		print(f"There is a(n) {i}")
+
+	print(" ")
+	print("Grab the small gas canister. You'll need fuel.")
+
+	tutInput = input("Type 'small gas canister' to grab it ")
+	while tutInput != "small gas canister":
+		tutInput = input("No, you need to type 'small gas canister'. You're gonna need gas. ")
+
+	AddItem(inventory, "small gas canister", itemTable)
+	print("You grab the small gas canister")
+	print(" ")
+	sleep(2)
+	print("Your car is a little damaged. You can use the scrap to repair it.")
+
+	tutInput = input("Type 'scrap' to grab it ")
+	while tutInput != "scrap":
+		tutInput = input("No, you need to type 'scrap'. You should have a repaired car before going out. ")
+
+	AddItem(inventory, "scrap", itemTable)
+	print("You grab the scrap")
+	print(" ")
+	sleep(2)
+
+	tutInput = input("Now repair your car. Type 'make repairs' to use the scrap")
+
+	while tutInput != "make repairs":
+		tutInput = input("No, you need to type 'make repairs'. You should have a repaired car before going out. ")
+
+		
+	health = makeRepairs(inventory, health, maxHealth)
+
+	while health != 30:
+		print(" ")
+		print("You were supposed to use the scrap.")
+		sleep(2)
+		health = makeRepairs(inventory, health, maxHealth)
+
+Tutorial(inventory, itemTable, carHealth, maxHealth)
 while True:
-	world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable = PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits, weapons, itemTable)
+	world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, cont = PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits, weapons, itemTable, turns)
+	if not cont:
+		print("You lose. Restart the program to try again")
+		break
