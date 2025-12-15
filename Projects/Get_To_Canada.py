@@ -1,5 +1,6 @@
 from random import randint, choice
 from time import sleep
+from copy import copy
 
 RED = '\033[31m'
 GREEN = '\033[32m'
@@ -34,7 +35,7 @@ class Item:
 		self.rarity = rarity
 
 worldWidth = 3
-worldLength = 20
+worldLength = 100
 
 playerPos = 0
 playerRoad = 0
@@ -45,17 +46,19 @@ gas = 27
 maxGas = 30
 mechanicsSkill = 4
 
+speed = 1
+
 world = {}
 exits = {}
 turns = {}
 enemies = {}
 
-inventory = [Item("VMARPG", 1, 23, "weapon", "legendary")]
-equippedWeapons = ["potato launcher", "none", "none"]
+inventory = []
+equippedWeapons = ["none", "none", "none"]
 
 itemTable = {
 	"scrap" : Item("scrap", 1, 1, "scrap", "common"),
-	"advanced scrap" : Item("advanced scrap", 1, 3, "scrap", "legendary"),
+	"advanced scrap" : Item("advanced scrap", 1, 3, "scrap", "epic"),
 	"small gas canister" : Item("small gas canister", 1, 5, "consumable", "common"),
 	"medium gas canister" : Item("medium gas canister", 1, 10, "consumable", "rare"),
 	"large gas canister" : Item("large gas canister", 1, 15, "consumable", "epic"),
@@ -79,17 +82,21 @@ itemTable = {
 	"flamethrower" : Item("flamethrower", 1, 16, "weapon", "epic"),
 	"lazer cannon" : Item("lazer cannon", 1, 20, "weapon", "legendary"),
 	"VMARPG" : Item("VMARPG", 1, 23, "weapon", "legendary"),
+	"engine booster" : Item("engine booster", 1, 3, "consumable", "rare"),
+	"engine supercharger" : Item("engine supercharger", 1, 5, "consumable", "legendary"),
+	"gasoline compressor" : Item("gasoline compressor", 1, 5, "consumable", "rare"),
+	"gasoline miniaturizer" : Item("gasoline miniaturizer", 1, 8, "consumable", "legendary"),
 }
 
 lootTable = {
 	"scrap" : 30,
-	"advanced scrap" : 3,
+	"advanced scrap" : 10,
 	"small gas canister" : 30,
 	"medium gas canister" : 10,
 	"large gas canister" : 5,
-	"beginner mechanics manual" : 25,
-	"intermediate mechanics manual" : 10,
-	"advanced mechanics manual" : 4,
+	"beginner mechanics manual" : 30,
+	"intermediate mechanics manual" : 15,
+	"advanced mechanics manual" : 6,
 	"steel plate" : 20,
 	"reinforced steel plate" : 7,
 	"diamond-steel plate" : 2,
@@ -106,7 +113,11 @@ lootTable = {
 	"minigun" : 3,
 	"flamethrower" : 3,
 	"lazer cannon" : 1,
-	"VMARPG" : 1
+	"VMARPG" : 1,
+	"engine booster" : 15,
+	"engine supercharger" : 3,
+	"gasoline compressor" : 5,
+	"gasoline miniaturizer" : 1,
 }
 
 weapons = {
@@ -123,7 +134,10 @@ weapons = {
 	"minigun" : Weapon(2, 10, 20, 55, 33),
 	"flamethrower" : Weapon(2, 30, 3, 66, 36),
 	"lazer cannon" : Weapon(1, 3, 50, 75, 50),
-	"VMARPG" : Weapon(100, 250, 1, 15, 60)
+	"VMARPG" : Weapon(100, 250, 1, 25, 60),
+	"Semi Cannon" : Weapon(50, 125, 1, 20, 0),
+	"Semi Blaster" : Weapon(1, 2, 35, 70, 0),
+	"Semi Energizer" : Weapon(1, 100, 3, 50, 0)
 }
 
 itemDefinitions = {
@@ -151,7 +165,11 @@ itemDefinitions = {
 	"minigun" : "Agressively fast firearm. Damage: 2-10, Shots: 20, Hit chance: 55, Install skill: 33",
 	"flamethrower" : "THIS THING SHOOT FIRE!!!! Damage: 2-30, Shots: 3, Hit chance: 66, Install skill: 36",
 	"lazer cannon" : "Evaporates foes instantly. Damage: 1-3, Shots: 50, Hit chance: 75, Install skill: 50",
-	"VMARPG" : "Eradicates anything it hits. Damage: 100-250, Shots: 1, Hit chance: 15, Install skill: 60"
+	"VMARPG" : "Eradicates anything it hits. Damage: 100-250, Shots: 1, Hit chance: 15, Install skill: 60", 
+	"engine booster" : "A powerful engine fluid that boosts the engine when mixed with gas. Increases miles per turn by 10",
+	"engine supercharger" : "An illegal engine boosting fluid that causes intense reactions when lit. Increases miles per turn by 30",
+	"gasoline compressor" : "An interesting chemical concoction that increases the density of gas, thereby shrinking it. Increases max gas by 5",
+	"gasoline miniaturizer" : "A powerful fluid that compresses the atoms in gas significantly. Increases max gas by 15 ",
 }
 
 enemyWeaponChancesEasy = {
@@ -206,7 +224,7 @@ enemyWeaponChancesInsane = {
 	"VMARPG" : 5,
 }
 
-names = ["Tesla Model X", "Dodge Challenger", "Chevorlet Nova", "Toyata Corrola"]
+names = ["Tesla Model X", "Dodge Challenger", "Chevorlet Nova", "Toyata Corrola", "Dodge Caravan"]
 
 parsedEnemyWeaponChancesEasy = []
 parsedEnemyWeaponChancesMedium = []
@@ -246,7 +264,7 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChancesE
 
 	for i in range(-worldWidth, worldWidth + 1):
 		for j in range(worldLength):
-			if randomBool(20):
+			if randomBool(15):
 				world[(j, i)] = "exit"
 				exits[(j, i)] = exit(parsedLootTable)
 			elif randomBool(20):
@@ -254,11 +272,19 @@ def worldGen(worldWidth, worldLength, parsedLootTable, parsedEnemyWeaponChancesE
 				turns[(j, i)] = turn(i, worldWidth)
 			else:
 				world[(j, i)] = "empty"
-				if randomBool(20):
+				if randomBool(35):
 					enemies[(j, i)] = createEnemy(parsedEnemyWeaponChancesEasy, parsedEnemyWeaponChancesMedium, parsedEnemyWeaponChancesHard, parsedEnemyWeaponChancesInsane, j, names)
 				else:
 					enemies[(j, i)] = "empty"
 
+	enemies[(0, 0)] = "empty"
+	enemies[(100, 0)] = Enemy("Super Semi", "Semi Blaster", "Semi Blaster", "Semi Energizer", 250)
+	world[(0, 0)] = "empty"
+	world[(100, 0)] = "empty"
+	world[(2, 0)] = "exit"
+	world[(1, 0)] = "empty"
+	enemies[(1, 0)] = "empty"
+	exits[(2, 0)] = [[], ["plank", "scrap", "beginner mechanics manual", "box of nails"], ["air fryer", "scrap", "steel plate", "steel plate", "paintball gun"], ["steel plate", "medium gas canister", "intermediate mechanics manual",  "reinforced steel plate"]]
 	return world, exits, turns, enemies
 			
 def exit(parsedLootTable):
@@ -315,7 +341,6 @@ def checkInventory(inventory):
 	for i in inventory:
 		if i.amount <= 0:
 			inventory.remove(i)
-			print(f"Removing {i.name}")
 
 	return inventory
 
@@ -338,89 +363,86 @@ def itemDictionary(itemDefs):
 		print(f"{YELLOW}{itemToLookup}: {itemDefs[itemToLookup]}{RESET}")
 
 
-def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, turns):
-	sleep(1)
-	gas -= 2
-	print(" ")
-	print(f"You are now at mile {playerPos * 10}")
-	print(f"You have {gas} liters of gas remaining")
-
+def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, turns, speed):	
 	global RED
 	global RESET
 	global YELLOW
-
-	itemInput = input("Do you want to look at your inventory? ")
-			
-	while itemInput != "yes" and itemInput != "no" :
-		print("Invalid answer")
-		itemInput = input("Do you want to look at your inventory? " )
-
-	if itemInput == "yes":
-		for i in inventory:				
-			print(f"You have {i.amount} {i.name}(s)")
-
-		print(" ")
-
-	itemInput = input("Do you want to look at your equipped weapons? ")
-			
-	while itemInput != "yes" and itemInput != "no" :
-		print("Invalid answer")
-		itemInput = input("Do you want to look at your equipped weapons? " )
-
-	if itemInput == "yes":
-		print(" ")
-		for i in range(len(equippedWeapons)):	
-			if equippedWeapons[i] != "none":
-				print(f"You have a(n) {equippedWeapons[i]} equipped in slot {i + 1}")
-			else:
-				print(f"You have nothing equipped in slot {i}")
-		print(" ")
+	global PURPLE
+	global BLUE
 	
-	if world[(playerPos, playerRoad)] == "empty":
-		if enemies[(playerPos, playerRoad)] == "empty":
+	sleep(1)
+	gas -= 2
+	print(" ")
+	print(f"You are now at mile {BLUE}{playerPos * 10}{RESET}")
+	print(f"You have {BLUE}{gas}{RESET} liters of gas remaining")
+	print(" ")
+	
 
-			itemInput = input("Do you want to use an item? ")
-			
-			while itemInput != "yes" and itemInput != "no" :
-				print("Invalid answer")
-				itemInput = input("Do you want to use an item? " )
-			if itemInput == "yes":
-				gas, mechanicsSkill, inventory, health, maxHealth = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+	if gas <= 0:
+		print(f"{RED}You are out of gas.{RESET}")
+		print(f"{RED}If you are still out of gas at the end of the turn, you will die{RESET}")
+		sleep(3)
 
+	possibleInputs = ["1", "2", "3", "4", "5", "6", "7"]
 
-			if health < maxHealth:
-				itemInput = input("Do you want to make repairs? " )
-			
-				while itemInput != "yes" and itemInput != "no":
-					print("Invalid answer")
-					itemInput = input("Do you want to make repairs? " )
-				if itemInput == "yes":
-					inventory, health = makeRepairs(inventory, health, maxHealth)
+	while True:
+		print(" ")
+		print("Do you want to \n 1. Look at your inventory \n 2. Look at your equipped weapons \n 3. Use the item dictionary \n 4. Use an item \n 5. Make repairs \n 6. Equip new weapons \n 7. Continue")
+		turnInput = input("Type the number of the option. ")	
 
-			itemInput = input("Do you want to modify your car? " )
-			
-			while itemInput != "yes" and itemInput != "no":
-				print("Invalid answer")
-				itemInput = input("Do you want to modify your car? " )
-			if itemInput == "yes":
-				inventory, equippedWeapons = modCar(inventory, equippedWeapons, weaponDict, mechanicsSkill)
+		while not turnInput in possibleInputs:
+			print("That is not a valid option")
+			turnInput = input("Pick a number between one and seven ")	
+
+		print(" ")
+		if turnInput == "1":
+			if bool(inventory):
+				for i in inventory:
+						if i.rarity == "rare": color = BLUE 
+						elif i.rarity == "epic": color = PURPLE 
+						elif i.rarity == "legendary": color = YELLOW 
+						else: color = WHITE
+						print(f"{color}You have {i.amount} {i.name}(s){RESET}")
+
+				input("Type anything to continue")
 			else:
-				playerPos += 1
-				if inventory == None:
-					inventory = []
-				print("You continue driving")
-				return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable
-		else:
-			print(f"{RED}You encounter an enemy!{RESET}")
-			sleep(1)
-			health, enemies, cont = DoCombat(enemies[(playerPos,playerRoad)], health, maxHealth, equippedWeapons, weaponDict, playerPos, playerRoad, enemies)
-			playerPos += 1
-			if inventory == None:
-				inventory = []
-			if cont == False: print("You continue driving")
-			return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, not cont
+				print("Your inventory is empty")
+		elif turnInput == "2":
+			for i in range(len(equippedWeapons)):
+				if equippedWeapons[i] == "none":
+					print(f"There is nothing equipped in slot {i}")
+				else:
+					weaponItem = itemTable[equippedWeapons[i]]
+					if weaponItem.rarity == "rare": color = BLUE 
+					elif weaponItem.rarity == "epic": color = PURPLE 
+					elif weaponItem.rarity == "legendary": color = YELLOW 
+					else: color = WHITE
+					print(f"There is a {equippedWeapons[i]} in slot {i + 1}")
+		elif turnInput == "3":
+			itemDictionary(itemDefs)
+		elif turnInput == "4":
+			gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth, speed)
+		elif turnInput == "5":
+			if gas < maxGas:
+				inventory, health = makeRepairs(inventory, health, maxHealth)
+			else:
+				print("Your car is already at max health")
+		elif turnInput == "6":
+			inventory, equippedWeapons = modCar(inventory, equippedWeapons, weaponDict, mechanicsSkill)
+		elif turnInput == "7":
+			if gas <= 0:
+				print(f"{RED}You are still out of gas{RESET}")
+				sleep(2)
+				print(f"{RED}Since you cant escape, cars quickly find you.{RESET}")
+				sleep(2)
+				print(f"{RED}You do not survive{RESET}")
+				sleep(2)
+				return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, False, speed
+			break
 
-	elif world[(playerPos, playerRoad)] == "exit":
+		sleep(2)
+
+	if world[(playerPos, playerRoad)] == "exit":
 		print(f"{YELLOW}You reach an exit{RESET}")
 		inventory, exits = DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory)
 	elif world[(playerPos, playerRoad)] == "turn":
@@ -431,15 +453,73 @@ def PlayerTurn(world, playerRoad, playerPos, enemies, health, maxHealth, gas, ma
 
 		while turnInput != "yes" and turnInput != "no":
 			print("That input is invalid")
-			turnInput = input(f"Do you want to turn to road {turns[(playerPos, playerRoad)]}?")
+			turnInput = input(f"Do you want to turn to road {playerRoad + turns[(playerPos, playerRoad)]}?")
 
 		if turnInput == "yes": DoTurn(playerPos, playerRoad, turns)
+	
+	if world[(playerPos, playerRoad)] == "empty" and enemies[(playerPos, playerRoad)] != "empty":
+		print(f"{RED}You encounter an enemy!{RESET}")
+		sleep(1)
+		health, enemies, cont = DoCombat(enemies[(playerPos,playerRoad)], health, maxHealth, equippedWeapons, weaponDict, playerPos, playerRoad, enemies)
+		if inventory == None:
+			inventory = []
 
-	playerPos += 1
+		if playerPos >= 100 and not cont:
+			Victory()
+			return True, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, not cont, speed
+		
+		if cont == True: return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, False, speed
+
+	stopInput = False
+	driveAmount = 1
+	if speed > 1 and (playerPos + speed) < 100:
+		for i in range(1, speed - 1):
+			if world[(playerPos + i, playerRoad)] == "exit":
+				print(f"There is an exit in {i * 10} miles")
+				stopInput = input("Do you want to stop here?")
+
+				while stopInput != "yes" and stopInput != "no" and stopInput != "y" and stopInput != "n":
+					print("Answer 'yes' or 'no'")
+					stopInput = input("Do you want to stop at the exit?")
+
+				if stopInput == "yes" or stopInput == "y":
+					stopInput = True
+					driveAmount = i
+					break
+				else:
+					stopInput = False
+			elif world[(playerPos + i, playerRoad)] == "turn":
+				print(f"There is a turn in {i * 10} miles")
+				stopInput = input("Do you want to stop here?")
+
+				while stopInput != "yes" and stopInput != "no" and stopInput != "y" and stopInput != "n":
+					print("Answer 'yes' or 'no'")
+					stopInput = input("Do you want to stop at the turn?")
+
+				if stopInput == "yes" or stopInput == "y":
+					stopInput = True
+					driveAmount = i
+					break
+				else:
+					stopInput = False
+
+	if stopInput == False: playerPos += speed
+	else: playerPos += driveAmount
+
+	if playerPos >= 100:
+		playerPos = 100
+		playerRoad = 0
+
+		print("You have reached the border")
+		sleep(1)
+		print(f"{RED}Only one foe remains{RESET}")
+		sleep(4)
+		return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, True, speed
+
 	if inventory == None:
 		inventory = []
 	print("You continue driving")
-	return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, True
+	return world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, True, speed
 
 def calcWeaponDamage(name, weaponDict):
 	totalDamage = 0
@@ -458,6 +538,9 @@ def calcWeaponDamage(name, weaponDict):
 		
 	
 def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, playerRoad, enemyDict): # the bool returned is telling playerTurn if the player is dead or not
+	global RED
+	global YELLOW
+	global RESET
 	enemyWeapons = [enemy.weaponOne, enemy.weaponTwo, enemy.weaponThree]
 	print(f"You are fighting a {enemy.name}")
 
@@ -489,6 +572,7 @@ def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, pl
 				if i != "none":
 					weapon = weaponTable[i]
 					totalDamage += calcWeaponDamage(i, weaponTable)
+					sleep(1)
 
 			enemy.health -= totalDamage
 			print(f"You dealt {totalDamage} damage")
@@ -496,7 +580,10 @@ def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, pl
 			if enemy.health > 0:
 				print(f"The {enemy.name} now has {enemy.health} HP")
 			else:
-				print(f"You killed the {enemy.name}")
+				if enemy.name != "Super Semi":
+					print(f"You killed the {enemy.name}")
+				else:
+					print(f"{YELLOW}You killed the Super Semi, the final obstacle between you and Canada{RESET}")
 				enemies[(playerPos, playerRoad)] = "empty" 
 				return health, enemyDict, False
 		else:
@@ -520,8 +607,35 @@ def DoCombat(enemy, health, maxHealth, playerWeapons, weaponTable, playerPos, pl
 		if health > 0:
 			print(f"You now have {health} HP")
 		else:
-			print("You died")
+			print(f"{RED}You died{RESET}")
 			return health, enemyDict, True
+		
+def Victory():
+	global YELLOW
+	global GREEN
+	global RESET
+
+	victoryString = f"""{GREEN}
+ _____      _     _____       _____                       _       
+|  __ \    | |   |_   _|     /  __ \                     | |      
+| |  \/ ___| |_    | | ___   | /  \/ __ _ _ __   __ _  __| | __ _ 
+| | __ / _ \ __|   | |/ _ \  | |    / _` | '_ \ / _` |/ _` |/ _` |
+| |_\ \  __/ |_    | | (_) | | \__/\ (_| | | | | (_| | (_| | (_| |
+ \____/\___|\__|   \_/\___/   \____/\__,_|_| |_|\__,_|\__,_|\__,_|
+{RESET}"""
+	print(" ")
+	sleep(5)
+	print(f"{YELLOW}You did it.{RESET}")
+	sleep(2)
+	print(f"{YELLOW}You made it to Canada.{RESET}")
+	sleep(2)
+	print(f"{YELLOW}You are a champion.{RESET}")
+	sleep(5)
+	print(victoryString)
+	sleep(3)
+	print(f"{GREEN}Made by Paxton Hall{RESET}")
+	sleep(3)
+	print(f"{GREEN}Thanks for playing!{RESET}")
 
 def DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory):
 	global YELLOW
@@ -556,11 +670,16 @@ def DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory):
 			loot.append(i)
 
 		while True:
-			itemToGrab = input("What item do you want to grab. Type the name of the item or 'quit' to leave this building. \nType 'def' to open the item definiton menu ")
+			print(" ")
+			if not bool(loot):
+				print("There is nothing in this building")
+				break
 
-			while not itemToGrab in loot and itemToGrab != "quit" and itemToGrab != "def":
+			itemToGrab = input("What item do you want to grab. Type the name of the item or 'quit' to leave this building. \nType 'def' to open the item definiton menu \nType 'all' to grab everything  ")
+
+			while not itemToGrab in loot and itemToGrab != "quit" and itemToGrab != "def" and itemToGrab != 'all':
 				print("That item is not there")
-				itemToGrab = input("What item do you want to grab? Type the name of the item or 'quit' to exit. \nType 'def' to open the item definiton menu  ")
+				itemToGrab = input("What item do you want to grab? Type the name of the item or 'quit' to exit. \nType 'def' to open the item definiton menu \nType 'all' to grab everything  ")
 
 			if itemToGrab == "quit":
 				break
@@ -573,7 +692,18 @@ def DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory):
 					elif itemTable[i].rarity == "epic": color = PURPLE 
 					elif itemTable[i].rarity == "legendary": color = YELLOW 
 					else: color = WHITE
-					print(f"{color}There is a(n) {i}{RESET}")
+					print(f"{color}There is a(n) {i} ({itemTable[i].type}){RESET} ")
+			elif itemToGrab == "all":
+				print(" ")
+				print("You grab everything")
+
+				for i in loot:
+					inventory = AddItem(inventory, i, itemTable)
+				
+				exit[buildingToLoot] = []
+				loot = []
+				break
+
 			else:
 				print(" ")
 				print(f"You grab the {itemToGrab}")
@@ -589,6 +719,12 @@ def DoExit(playerPos, playerRoad, exits, itemDefs, itemTable, inventory):
 					else: color = WHITE
 					print(f"{color}There is a(n) {i}{RESET}")
 
+	if playerPos == 2:
+		print(" ")
+		print(f"{BLUE}Now that you have an array of weapons and manuals, make sure to use them to upgrade your gear{RESET}")
+		print(" ")
+		sleep(3)
+
 	return inventory, exits
 
 def AddItem(inventory, name, itemTable):
@@ -602,43 +738,62 @@ def AddItem(inventory, name, itemTable):
 	if name in existingNames:
 		inventory[nameIndex[name]].amount += 1
 	else:
-		inventory.append(itemTable[name])
+		item = copy(itemTable[name])
+		item.amount = 1
+		inventory.append(item)
 
 	return inventory
 
 def DoTurn(playerPos, playerRoad, turns):
-	playerRoad = turns[(playerPos, playerRoad)]
+	playerRoad += turns[(playerPos, playerRoad)]
 
 	if playerRoad != 0: print(f"You move to subroad {playerRoad}")
 	else: print("You are back on the i-35")
 
-def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):	
+def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth, speed):	
 	while True:
 		print(" ")
 
 		if inventory == None:
 			print("your inventory is empty")
-			return gas, mechanicsSkill, inventory, health, maxHealth
+			return gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas
 		
 		items = {}
 		nameIndex = {}
+		indexName = {}
+		index = 1
 		for i in inventory:
 			if i.type == "consumable":
 				items[i.name] = i
-				print(f"You have {i.amount} {i.name}(s)")
+				print(f"({index}). {i.amount} {i.name}(s)")
+				nameIndex[i.name] = inventory.index(i)
+				indexName[index] = i.name
+				index += 1
 
 		if len(items) == 0:
 			print("You have no useable items")
-			return gas, mechanicsSkill, inventory, health, maxHealth
+			return gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas
 
-		nameIndex[i.name] = inventory.index(i)
-		itemToUse = input("What item do you want to use? Type the name of the item or 'quit' to exit: ")
+		
+		itemToUse = input("What item do you want to use? Type the name or number of the item or 'quit' to exit: ")
 
-		while not itemToUse in items.keys() and itemToUse != "quit":
+		if itemToUse.isdecimal():
+			if not float(itemToUse) in indexName.keys():
+				itemToUse = "Failed Number Check"
+
+		while not itemToUse in items.keys() and itemToUse != "quit" and not itemToUse.isdecimal():
 			print("You do not have that item")
 			itemToUse = input("What item do you want to use? Type the name of the item or 'quit' to exit: ")
 
+			if itemToUse.isdecimal():
+				if not float(itemToUse) in indexName.keys():
+					itemToUse = "Failed Number Check"
+
 		print(" ")
+
+		if itemToUse.isdecimal():
+			if float(itemToUse) in indexName.keys():
+				itemToUse = indexName[float(itemToUse)]
 
 		if itemToUse != "quit": print(f"You use the {itemToUse}")
 
@@ -660,7 +815,7 @@ def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 
 				inventory[nameIndex[itemToUse]].amount -= 1
 			else: print("You already have maxium gas in your tank")
-		elif itemToUse == "beeg gas canister":
+		elif itemToUse == "large gas canister":
 			if gas < maxGas:
 				gas += 12
 				if gas > maxGas:
@@ -669,16 +824,16 @@ def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 
 				inventory[nameIndex[itemToUse]].amount -= 1
 			else: print("You already have maxium gas in your tank")
-		elif itemToUse == "beginners mechanics manual":
+		elif itemToUse == "beginner mechanics manual":
 			mechanicsSkill += 1
 			print(f"You now have {mechanicsSkill} mechanics skill.")
 			inventory[nameIndex[itemToUse]].amount -= 1
 		elif itemToUse == "intermediate mechanics manual":
-			mechanicsSkill += 3
+			mechanicsSkill += 4
 			print(f"You now have {mechanicsSkill} mechanics skill.")
 			inventory[nameIndex[itemToUse]].amount -= 1
 		elif itemToUse == "advanced mechanics manual":
-			mechanicsSkill += 6
+			mechanicsSkill += 10
 			print(f"You now have {mechanicsSkill} mechanics skill.")
 			inventory[nameIndex[itemToUse]].amount -= 1
 		elif itemToUse == "steel plate":
@@ -696,9 +851,25 @@ def useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth):
 			health = maxHealth
 			print(f"You now have {maxHealth} car health.")
 			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "engine booster":
+			speed += 1
+			print(f"Miles per turn increased to {speed * 10}")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "engine supercharger":
+			speed += 3
+			print(f"Miles per turn increased to {speed * 10}")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "gasoline compressor":
+			maxGas += 5
+			print(f"Maximum gasoline increased to {maxGas} liters")
+			inventory[nameIndex[itemToUse]].amount -= 1
+		elif itemToUse == "gasoline miniaturizer":
+			maxGas += 15
+			print(f"Maximum gasoline increased to {maxGas} liters")
+			inventory[nameIndex[itemToUse]].amount -= 1
 		elif itemToUse == "quit":
 			inventory = checkInventory(inventory)
-			return gas, mechanicsSkill, inventory, health, maxHealth
+			return gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas
 		
 		inventory = checkInventory(inventory)
 
@@ -722,31 +893,55 @@ def makeRepairs(inventory, health, maxHealth):
 			print("You have no scrap in your inventory")
 			return inventory, health
 
-		scrapToUse = input("What scrap do you want to use. Type the name of the scrap or 'quit'to leave the menu ")
+		scrapToUse = input("What scrap do you want to use. Type 'scrap' or 'advanced scrap', or 'quit'to leave the menu ")
 
 		while not scrapToUse in items.keys() and scrapToUse != "quit":
 			print("You dont have that")
-			scrapToUse = input("What scrap do you want to use. Type the name of the scrap or 'quit'to leave the menu ")
+			scrapToUse = input("What scrap do you want to use. Type 'scrap' or 'advanced scrap', or 'quit'to leave the menu ")
 
 		if scrapToUse == "quit":
 			return inventory, health
 		
 		if scrapToUse == "scrap":
-			health += 3
-			if health > maxHealth: health = maxHealth
-			print(f"Your health is now {health}")
-			inventory[nameIndex[scrapToUse]].amount -= 1
+			if inventory[nameIndex[scrapToUse]].amount < 2:
+				health += 3
+				if health > maxHealth: health = maxHealth
+				print(f"Your health is now {health}")
+				inventory[nameIndex[scrapToUse]].amount -= 1
+			else:
+				amountToUse = input(f"How many would you like to use. It can be a max of {inventory[nameIndex[scrapToUse]].amount}")
+
+				while True:
+					if amountToUse.isdigit():
+						if int(amountToUse) > inventory[nameIndex[scrapToUse]].amount:
+							print("You dont have that many")
+						else:
+							amountToUse = int(amountToUse)
+							break
+					else:
+						print("It has to be a number")
+					amountToUse = input(f"How many would you like to use. It can be a max of {inventory[nameIndex[scrapToUse]].amount}")
+				inventory[nameIndex[scrapToUse]].amount -= amountToUse
+				health += 3 * amountToUse
+				if health > maxHealth: health = maxHealth
+				print(f"Your health is now {health}")
+
+
 		elif scrapToUse == "advanced scrap":
 			health += 3
 			if health > maxHealth: health = maxHealth
 			print(f"Your health is now {health}")
 			inventory[nameIndex[scrapToUse]].amount -= 1
+			
 
 		inventory = checkInventory(inventory)
 
 def modCar(inventory, equippedWeapons, weaponTable, mechanicsSkill):
 	global BLUE
 	global RESET
+	global YELLOW
+	global PURPLE
+	global GREEN
 	while True:
 		items = {}
 		nameIndex = {}
@@ -759,9 +954,15 @@ def modCar(inventory, equippedWeapons, weaponTable, mechanicsSkill):
 
 		for i in inventory:
 			if i.type == "weapon":
+				color = ""
+				if i.rarity == "rare": color = BLUE 
+				elif i.rarity == "epic": color = PURPLE 
+				elif i.rarity == "legendary": color = YELLOW 
+				elif i.rarity == "common": color = GREEN
 				items[i.name] = i
+				weapon = weaponTable[i.name]
 				nameIndex[i.name] = inventory.index(i)
-				print(f"You have {i.amount} {i.name}(s)")
+				print(f"{color}You have {i.amount} {i.name}(s){RESET} [damage: {weapon.damageMin} - {weapon.damageMax}, shots: {weapon.shots}, hit chance: {weapon.hitChance}, install skill: {weapon.installSkill}]")
 
 		if len(items) <= 0:
 			print("You have no weapons in your inventory")
@@ -803,12 +1004,13 @@ def modCar(inventory, equippedWeapons, weaponTable, mechanicsSkill):
 				yesNo = input(f"Do you want to replace the {equippedWeapons[int(slot) - 1]}? 'yes' or 'no'? ")
 
 			if yesNo == "yes":
-				equippedWeapons[int(slot)] =  weaponToEquip
+				equippedWeapons[int(slot) - 1] =  weaponToEquip
 				inventory[nameIndex[weaponToEquip]].amount -= 1
+				print(f"{weaponToEquip} equipped to slot {slot}")
 
 		inventory = checkInventory(inventory)
 
-def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkill):
+def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkill, equippedWeapons, weaponTable, speed):
 	global RED
 	global RESET
 	print(f"{RED}You need to get out of here...{RESET}")
@@ -856,7 +1058,7 @@ def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkil
 	print(" ")
 	sleep(2)
 
-	tutInput = input("Now repair your car. Type 'make repairs' to use the scrap")
+	tutInput = input("Now repair your car. Type 'make repairs' to use the scrap ")
 
 	while tutInput != "make repairs":
 		tutInput = input("No, you need to type 'make repairs'. You should have a repaired car before going out. ")
@@ -870,21 +1072,20 @@ def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkil
 		inventory, health = makeRepairs(inventory, health, maxHealth)
 
 	print(" ")
-	print("You realize that your fuel tank is also not full. Use the gas canister to refuel")
-	tutInput = input("Type 'use item' to use the gas canister")
+	print("You realize that your fuel tank is also not full. Use the gas canister to refuel ")
+	tutInput = input("Type 'use item' to use the gas canister ")
 
 	while tutInput != "use item":
 		print("You shouldn't leave on a half full tank")
 		tutInput = input("Type 'use item' to use the gas canister ")
 
-	gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
-	print(f"Gas: {gas}")
+	gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth, speed)
 
 	while gas < 30:
 		print(" ")
 		print("You shouldn't leave on a half full tank")
 		sleep(2)
-		gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+		gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth, speed)
 
 	print(" ")
 	sleep(2)
@@ -892,7 +1093,7 @@ def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkil
 
 	tutInput = input("Type 'beginner mechanics manual' to grab it ")
 	while tutInput != "beginner mechanics manual":
-		tutInput = input("No, you need to type 'small gas canister'. It will be good to have. ")
+		tutInput = input("No, you need to type 'beginner mechanics manual'. It will be good to have. ")
 
 	AddItem(inventory, "beginner mechanics manual", itemTable)
 	print("You grab the beginner mechanics manual")
@@ -912,26 +1113,76 @@ def Tutorial(inventory, itemTable, health, maxHealth, gas, maxGas, mechanicsSkil
 
 	print("After some closer examination, you relize you dont know how to install it")
 	print("Your mechanics skill is too low.")
-	print("You can use the mechanics manual to increase your skill from four to five")
+	print(f"You can use the mechanics manual to increase your skill from {BLUE}four{RESET} to {BLUE}five{RESET}")
 
-	tutInput = input("Type 'use item' to use the mechanics manual")
+	tutInput = input("Type 'use item' to use the mechanics manual ")
 
 	while tutInput != "use item":
 		print("You need to know how to equip the potato launcher")
-		tutInput = input("Type 'use item' to use the mechanics manual")
+		tutInput = input("Type 'use item' to use the mechanics manual ")
 
-	gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
+	gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth, speed)
 
-	while True:
+	while mechanicsSkill < 5:
 		print(" ")
-		print("gas =" + gas)
-		print("You shouldn't leave on a half full tank")
+		print("You should probably learn how to attach the potato launcher")
 		sleep(2)
-		gas, mechanicsSkill, inventory, health, maxHealth == useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth)
-		
-Tutorial(inventory, itemTable, carHealth, maxHealth, gas, maxGas, mechanicsSkill)
+		gas, mechanicsSkill, inventory, health, maxHealth, speed, maxGas = useItem(inventory, gas, maxGas, mechanicsSkill, health, maxHealth, speed)
+
+	print(" ")
+	print(f"Now for the most important part. {YELLOW}Attach the potato launcher{RESET}")
+
+	sleep(2)
+
+	tutInput = input("Type 'modify car' to enter the weapon equip menu.")
+
+	while tutInput != "modify car":
+		print("It's dangerous out there. You'll need a weapon.")
+		tutInput = input("Type 'modify car' to enter the weapon equip menu.")
+
+	print(" ")
+	inventory, equippedWeapons = modCar(inventory, equippedWeapons, weaponTable, mechanicsSkill)
+
+	while equippedWeapons[0] == "none" and equippedWeapons[1] == "none" and equippedWeapons[2] == "none":
+		print(" ")
+		print("You should probably attach the potato launcher")
+		sleep(2)
+		inventory, equippedWeapons = modCar(inventory, equippedWeapons, weaponTable, mechanicsSkill)
+
+	print("Fantastic. You are ready(ish) to go out into the world.")
+	sleep(2)
+	print("Before you go, some last words of advice")
+	sleep(2)
+	print(f"Make sure to stop at exits. They lead to towns, {YELLOW}which you can loot{RESET}")
+	sleep(2)
+	print(f"Turns lead to {YELLOW}different roads, with new loot for you to grab{RESET}")
+	sleep(2)
+	print(f"You will find {RED}enemies{RESET} on the road. Continuously upgrade your gear to fight them off")
+	sleep(2)
+	print(f"{YELLOW}Good luck{RESET}")
+	return 32, health, equippedWeapons, mechanicsSkill
+
+print(" ")
+skipInput = input("Do you want to skip the starting scene/tutorial? \nYou probably shouldn't unless you've played before. ")
+
+while skipInput != "yes" and skipInput != "no":
+	print("Answer 'yes' or 'no'")
+	skipInput = input("Do you want to skip the starting scene/tutorial? \nYou probably shouldn't unless you've played before. ")
+
+if skipInput == "no":
+	gas, health, equippedWeapons, mechanicsSkill = Tutorial(inventory, itemTable, carHealth, maxHealth, gas, maxGas, mechanicsSkill, equippedWeapons, weapons, speed)
+else:
+	print("Skipping tutorial")
+	gas = 32
+	carHealth = 30
+	equippedWeapons[0] = "potato launcher"
+	mechanicsSkill = 5
+
 while True:
-	world, playerRoad, playerPos, enemies, health, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, cont = PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits, weapons, itemTable, turns)
+	world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefs, exits, weaponDict, itemTable, cont, speed = PlayerTurn(world, playerRoad, playerPos, enemies, carHealth, maxHealth, gas, maxGas, mechanicsSkill, inventory, equippedWeapons, itemDefinitions, exits, weapons, itemTable, turns, speed)
 	if not cont:
 		print("You lose. Restart the program to try again")
+		break
+
+	if world == True:
 		break
